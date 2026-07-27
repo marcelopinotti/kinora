@@ -5,6 +5,7 @@ import com.kinora.dto.CategoriaRequest;
 import com.kinora.dto.CategoriaResponse;
 import com.kinora.service.CategoriaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +19,8 @@ public class CategoriaController {
     private final CategoriaService service;
 
     @GetMapping
-    public List<CategoriaResponse> findAll(){
-        return service.findAll();
+    public ResponseEntity<List<CategoriaResponse>> findAll(){
+        return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
@@ -28,6 +29,7 @@ public class CategoriaController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CategoriaResponse> create(@RequestBody CategoriaRequest dto){
         return ResponseEntity.ok(service.criar(dto));
     }
