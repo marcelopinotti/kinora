@@ -1,9 +1,9 @@
 package com.kinora.dto;
 
 import com.kinora.domain.Streaming;
-import lombok.experimental.UtilityClass;
 
-@UtilityClass
+
+
 public class StreamingMapper {
 
     public static Streaming toRequest(StreamingRequest res){
