@@ -86,4 +86,11 @@ public class FilmeService {
         }
         return streamings;
     }
+
+    public List<FilmeResponse> findByCategoriaId(Long categoriaId) {
+        return filmeRepository.findByCategorias_Id(categoriaId)
+                .stream()
+                .map(FilmeMapper::toResponse)
+                .toList();
+    }
 }

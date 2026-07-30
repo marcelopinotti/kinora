@@ -44,4 +44,10 @@ public class FilmeController {
     public ResponseEntity<FilmeResponse> update(@PathVariable Long id, @RequestBody FilmeRequest req) {
         return ResponseEntity.ok(service.atualizar(id, req));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<FilmeResponse>> findByCategoriaId(@RequestParam("categoria") Long categoriaId) {
+        return ResponseEntity.ok(service.findByCategoriaId(categoriaId));
+    }
+
 }
