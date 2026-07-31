@@ -1,8 +1,9 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import {TopBar} from '../components/TopBar';
 import {useAuth} from '../auth';
-import {api, mensagemGenerica, type Categoria, type FilmeResponse, type Tipo} from '../api';
+import {api, type Categoria, type FilmeResponse, type Tipo} from '../api';
+import {useFetch} from '../hooks/useFetch';
 
 // Uma página só para /, /filmes e /series: muda a cópia e o param da API, não o
 // componente. Chave undefined = catálogo inteiro.
@@ -17,45 +18,20 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
     const [searchParams] = useSearchParams();
     const q = (searchParams.get('q') ?? '').trim().toLowerCase();
 
-    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [selecionada, setSelecionada] = useState<number | null>(null);
-    const [filmes, setFilmes] = useState<FilmeResponse[] | null>(null);
-    const [erro, setErro] = useState('');
-    const [erroCategorias, setErroCategorias] = useState('');
 
     const copia = COPIA[tipo ?? 'todos'];
 
-    useEffect(() => {
-        let cancelled = false;
-        api
-            .categorias()
-            .then((cats) => {
-                if (!cancelled) setCategorias(cats);
-            })
-            .catch(() => {
-                if (!cancelled) setErroCategorias('Não foi possível carregar os filtros.');
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+    const {data: categorias, erro: erroCategorias} = useFetch<Categoria[]>(
+        () => api.categorias(),
+        [],
+        () => 'Não foi possível carregar os filtros.',
+    );
 
-    useEffect(() => {
-        let cancelled = false;
-        setFilmes(null);
-        setErro('');
-        api
-            .filmes({tipo, categoria: selecionada ?? undefined})
-            .then((data) => {
-                if (!cancelled) setFilmes(data);
-            })
-            .catch((err) => {
-                if (!cancelled) setErro(mensagemGenerica(err));
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [tipo, selecionada]);
+    const {data: filmes, erro} = useFetch<FilmeResponse[]>(
+        () => api.filmes({tipo, categoria: selecionada ?? undefined}),
+        [tipo, selecionada],
+    );
 
     const filtrados = useMemo(() => {
         if (!filmes) return [];
@@ -81,7 +57,7 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
                     >
                         Todos
                     </button>
-                    {categorias.map((c) => (
+                    {(categorias ?? []).map((c) => (
                         <button
                             key={c.id}
                             type="button"

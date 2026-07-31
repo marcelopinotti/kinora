@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthShell } from '../components/AuthShell';
 import { Field } from '../components/Field';
 import { useAuth } from '../auth';
-import { ApiError, api, mensagemGenerica } from '../api';
+import { api, erroDeApi } from '../api';
 
 export function Cadastro() {
   const navigate = useNavigate();
@@ -25,9 +25,10 @@ export function Cadastro() {
     try {
       await api.registrar({ nome: nome.trim(), email: email.trim(), senha });
     } catch (err) {
-      if (err instanceof ApiError && err.campos) setErros(err.campos);
-      else if (err instanceof ApiError && err.detail) setErros({ email: err.detail });
-      else setErros({ email: mensagemGenerica(err) });
+      // 409 de e-mail duplicado vai sob o campo; falha sem campo identificável vai
+      // para `geral`, acima do formulário — antes caía sob "e-mail" e sugeria que o
+      // problema era o endereço digitado, mesmo quando era a rede.
+      setErros(erroDeApi(err, 'email'));
       setEnviando(false);
       return;
     }
@@ -55,6 +56,7 @@ export function Cadastro() {
 
   return (
     <AuthShell titulo="Cadastre-se" sub="Milhares de filmes e séries. Cancele quando quiser.">
+      {erros.geral && <p className="field-error">{erros.geral}</p>}
       <form onSubmit={onSubmit}>
         <div className="flex flex-col gap-4">
           <Field

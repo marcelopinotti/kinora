@@ -1,42 +1,29 @@
-import {useEffect, useState, type CSSProperties} from 'react';
+import {type CSSProperties} from 'react';
 import {Link, useParams} from 'react-router-dom';
 import {TopBar} from '../components/TopBar';
 import {useAuth} from '../auth';
 import {ApiError, api, mensagemGenerica, type FilmeResponse} from '../api';
+import {useFetch} from '../hooks/useFetch';
+
+// 404 tem mensagem própria: "tente novamente" não ajuda quem digitou um id inexistente.
+function mensagemDoDetalhe(err: unknown): string {
+    return err instanceof ApiError && err.status === 404 ? 'Título não encontrado.' : mensagemGenerica(err);
+}
 
 export function Detalhe() {
     const {id} = useParams<{ id: string }>();
     const {user} = useAuth();
-    const [filme, setFilme] = useState<FilmeResponse | null>(null);
-    const [erro, setErro] = useState('');
 
-    useEffect(() => {
-        let cancelled = false;
-        setFilme(null);
-        setErro('');
+    const idNum = Number(id);
+    const idValido = Number.isInteger(idNum) && idNum > 0;
 
-        const idNum = Number(id);
-        if (!Number.isInteger(idNum) || idNum <= 0) {
-            // /titulo/abc virava GET /api/filme/NaN, que volta 400 e caía na mensagem
-            // genérica em vez da específica de título inexistente.
-            setErro('Título não encontrado.');
-            return;
-        }
-
-        api
-            .filme(idNum)
-            .then((f) => {
-                if (!cancelled) setFilme(f);
-            })
-            .catch((err) => {
-                if (cancelled) return;
-                // 404 tem mensagem própria: "tente novamente" não ajuda quem digitou um id que não existe.
-                setErro(err instanceof ApiError && err.status === 404 ? 'Título não encontrado.' : mensagemGenerica(err));
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [id]);
+    const {data: filme, erro} = useFetch<FilmeResponse>(
+        // /titulo/abc virava GET /api/filme/NaN, que volta 400 e caía na mensagem
+        // genérica. Rejeitar como 404 aqui reaproveita o tradutor acima.
+        () => (idValido ? api.filme(idNum) : Promise.reject(new ApiError(404))),
+        [id],
+        mensagemDoDetalhe,
+    );
 
     if (erro) {
         return (

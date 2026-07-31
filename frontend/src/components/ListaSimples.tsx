@@ -1,5 +1,6 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { ApiError, mensagemGenerica } from '../api';
+import { useFetch } from '../hooks/useFetch';
 
 export type Item = { id: number; nome: string };
 
@@ -35,8 +36,6 @@ export function ListaSimples({
   atualizarItem,
   excluirItem,
 }: ListaSimplesProps) {
-  const [items, setItems] = useState<Item[] | null>(null);
-  const [loadError, setLoadError] = useState('');
   const [novo, setNovo] = useState('');
   const [erroNovo, setErroNovo] = useState('');
   const [criando, setCriando] = useState(false);
@@ -45,21 +44,11 @@ export function ListaSimples({
   const [rowErr, setRowErr] = useState<Record<number, string>>({});
   const [rowBusy, setRowBusy] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchItens()
-      .then((data) => {
-        if (!cancelled) setItems(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(mensagemGenerica(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-    // fetchItens vem de api.ts como referência estável (api.categorias / api.streamings).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // setItems continua exposto porque criar/renomear/excluir atualizam a lista no
+  // cliente, sem refazer a busca.
+  // Deps vazias: fetchItens é api.categorias/api.streamings, referência estável
+  // de um objeto de módulo, então incluí-la só provocaria refetch a cada render.
+  const { data: items, setData: setItems, erro: loadError } = useFetch<Item[]>(() => fetchItens(), []);
 
   function validarNome(nome: string, ignorarId?: number): string | null {
     const v = nome.trim();

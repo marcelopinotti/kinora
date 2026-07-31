@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import {Field} from '../components/Field';
 import {TopBar} from '../components/TopBar';
 import {useAuth} from '../auth';
-import {ApiError, api, mensagemGenerica} from '../api';
+import {api, erroDeApi, mensagemGenerica} from '../api';
 
 export function Conta() {
     const {user, refreshUser, logout} = useAuth();
@@ -63,10 +63,8 @@ function ContaConteudo({
             setDadosErro({});
             setDadosSalvo(true);
         } catch (err) {
-            if (err instanceof ApiError && err.campos) setDadosErro(err.campos);
             // 409 "E-mail já cadastrado" cai naturalmente sob o campo e-mail.
-            else if (err instanceof ApiError && err.detail) setDadosErro({email: err.detail});
-            else setDadosErro({geral: mensagemGenerica(err)});
+            setDadosErro(erroDeApi(err, 'email'));
         } finally {
             setSalvandoDados(false);
         }
@@ -92,10 +90,8 @@ function ContaConteudo({
             setSenhaAtual('');
             setNovaSenha('');
         } catch (err) {
-            if (err instanceof ApiError && err.campos) setSenhaErro(err.campos);
             // 401 com detail "Senha atual incorreta": erro de negócio, NUNCA desloga — mostra sob o campo.
-            else if (err instanceof ApiError && err.detail) setSenhaErro({senhaAtual: err.detail});
-            else setSenhaErro({geral: mensagemGenerica(err)});
+            setSenhaErro(erroDeApi(err, 'senhaAtual'));
         } finally {
             setSalvandoSenha(false);
         }

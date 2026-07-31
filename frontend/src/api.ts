@@ -145,6 +145,22 @@ export function mensagemGenerica(err: unknown): string {
   return 'Não foi possível concluir a operação. Tente novamente.';
 }
 
+/**
+ * A cascata de três braços sobre ApiError estava copiada em quatro handlers de
+ * submit, idêntica a menos do campo que recebe o `detail`.
+ *
+ * `campoDetail` é onde cai o erro de negócio que o backend endereça a um campo
+ * específico (409 de e-mail duplicado sob "email", 401 de senha atual incorreta
+ * sob "senhaAtual"). Falha sem campo identificável vai para `geral`, que as telas
+ * renderizam acima do formulário — pôr uma falha de rede sob o campo de e-mail
+ * sugeria que o problema era o valor digitado.
+ */
+export function erroDeApi(err: unknown, campoDetail = 'geral'): Record<string, string> {
+  if (err instanceof ApiError && err.campos) return err.campos;
+  if (err instanceof ApiError && err.detail) return { [campoDetail]: err.detail };
+  return { geral: mensagemGenerica(err) };
+}
+
 export const api = {
   registrar: (body: { nome: string; email: string; senha: string }) =>
     request<Usuario>('POST', '/api/auth/registrar', body),

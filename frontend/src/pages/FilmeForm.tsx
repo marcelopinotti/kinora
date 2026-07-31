@@ -3,14 +3,15 @@ import { Link, useParams } from 'react-router-dom';
 import { Field } from '../components/Field';
 import { TopBar } from '../components/TopBar';
 import {
-  ApiError,
   api,
+  erroDeApi,
   mensagemGenerica,
   type Categoria,
   type FilmeRequest,
   type Streaming,
   type Tipo,
 } from '../api';
+import { useFetch } from '../hooks/useFetch';
 
 const URL_HTTP = /^https?:\/\//i;
 
@@ -52,23 +53,18 @@ export function FilmeForm() {
   const [sucesso, setSucesso] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [streamings, setStreamings] = useState<Streaming[]>([]);
   const [carregandoFilme, setCarregandoFilme] = useState(modo === 'editar');
   const [erroCarregar, setErroCarregar] = useState('');
+
   // Sem as listas o formulário é insubmissível (validar() exige 1 de cada):
   // o erro precisa aparecer e o envio ficar bloqueado, não falhar em silêncio.
-  const [erroListas, setErroListas] = useState('');
-
-  useEffect(() => {
-    Promise.all([api.categorias(), api.streamings()])
-      .then(([cats, streams]) => {
-        setCategorias(cats);
-        setStreamings(streams);
-        setErroListas('');
-      })
-      .catch(() => setErroListas('Não foi possível carregar as categorias e os streamings. Recarregue a página.'));
-  }, []);
+  const {data: listas, erro: erroListas} = useFetch<[Categoria[], Streaming[]]>(
+    () => Promise.all([api.categorias(), api.streamings()]),
+    [],
+    () => 'Não foi possível carregar as categorias e os streamings. Recarregue a página.',
+  );
+  const categorias = listas?.[0] ?? [];
+  const streamings = listas?.[1] ?? [];
 
   useEffect(() => {
     if (modo !== 'editar' || !id) return;
@@ -193,8 +189,7 @@ export function FilmeForm() {
         setStreamingsSel([]);
       }
     } catch (err) {
-      if (err instanceof ApiError && err.campos) setFieldErrors(err.campos);
-      else setFieldErrors({ geral: mensagemGenerica(err) });
+      setFieldErrors(erroDeApi(err));
     } finally {
       setEnviando(false);
     }
