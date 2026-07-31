@@ -1,6 +1,5 @@
 import {type CSSProperties} from 'react';
 import {Link, useParams} from 'react-router-dom';
-import {TopBar} from '../components/TopBar';
 import {useAuth} from '../auth';
 import {ApiError, api, mensagemGenerica, type FilmeResponse} from '../api';
 import {useFetch} from '../hooks/useFetch';
@@ -26,29 +25,18 @@ export function Detalhe() {
     );
 
     if (erro) {
-        return (
-            <div className="relative min-h-screen pb-[70px]">
-                <TopBar/>
-                <p className="state-msg state-error">{erro}</p>
-            </div>
-        );
+        return <p className="state-msg state-error">{erro}</p>;
     }
 
     if (!filme) {
-        return (
-            <div className="relative min-h-screen pb-[70px]">
-                <TopBar/>
-                <p className="state-msg">Carregando título...</p>
-            </div>
-        );
+        return <p className="state-msg">Carregando título...</p>;
     }
 
     const ano = filme.dataLancamento ? filme.dataLancamento.slice(-4) : null;
     const genero = filme.categorias[0]?.nome ?? null;
 
     return (
-        <div className="relative min-h-screen pb-[70px]">
-            <TopBar/>
+        <>
             <section className="relative pb-6">
                 {/* O fundo é o próprio pôster, injetado como custom property; sem pôster o
             elemento nem existe e a tela cai no fundo padrão. encodeURI escapa as
@@ -142,6 +130,6 @@ export function Detalhe() {
                     </div>
                 </div>
             </section>
-        </div>
+        </>
     );
 }

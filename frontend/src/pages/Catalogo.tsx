@@ -1,6 +1,5 @@
 import {useMemo, useState} from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
-import {TopBar} from '../components/TopBar';
 import {useAuth} from '../auth';
 import {api, type Categoria, type FilmeResponse, type Tipo} from '../api';
 import {useFetch} from '../hooks/useFetch';
@@ -42,8 +41,7 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
     }, [filmes, q]);
 
     return (
-        <div className="relative min-h-screen pb-[70px]">
-            <TopBar/>
+        <>
             <div className="px-pad flex flex-wrap items-end justify-between gap-5 pt-3.5">
                 <div>
                     <p className="eyebrow">{copia.eyebrow}</p>
@@ -85,7 +83,7 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
                     ))}
                 </div>
             )}
-        </div>
+        </>
     );
 }
 

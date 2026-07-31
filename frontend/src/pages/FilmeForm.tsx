@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Field } from '../components/Field';
-import { TopBar } from '../components/TopBar';
 import {
   api,
   erroDeApi,
@@ -196,26 +195,14 @@ export function FilmeForm() {
   }
 
   if (modo === 'editar' && carregandoFilme) {
-    return (
-      <div className="relative min-h-screen pb-[70px]">
-        <TopBar />
-        <p className="state-msg">Carregando título...</p>
-      </div>
-    );
+    return <p className="state-msg">Carregando título...</p>;
   }
 
   if (modo === 'editar' && erroCarregar) {
-    return (
-      <div className="relative min-h-screen pb-[70px]">
-        <TopBar />
-        <p className="state-msg state-error">{erroCarregar}</p>
-      </div>
-    );
+    return <p className="state-msg state-error">{erroCarregar}</p>;
   }
 
   return (
-    <div className="relative min-h-screen pb-17.5">
-      <TopBar />
       <div className="px-pad mx-auto w-full max-w-[calc(1040px+var(--spacing-pad)*2)] pt-[18px]">
         <div className="bg-surface border-border rounded-[14px] border px-[clamp(20px,5vw,56px)] pt-[clamp(28px,5vw,46px)] pb-[clamp(32px,5vw,52px)]">
           <div className="mb-[38px] text-center">
@@ -427,6 +414,5 @@ export function FilmeForm() {
           </form>
         </div>
       </div>
-    </div>
   );
 }

@@ -1,11 +1,8 @@
 import {ListaSimples} from '../components/ListaSimples';
-import {TopBar} from '../components/TopBar';
 import {api} from '../api';
 
 export function Gerenciar() {
     return (
-        <div className="relative min-h-screen pb-17.5">
-            <TopBar/>
             <div
                 className="px-pad mx-auto flex w-full max-w-[calc(1180px+var(--spacing-pad)*2)] flex-col gap-6.5 pt-4.5">
                 <div>
@@ -41,6 +38,5 @@ export function Gerenciar() {
                     />
                 </div>
             </div>
-        </div>
     );
 }

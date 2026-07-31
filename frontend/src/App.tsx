@@ -1,5 +1,6 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { RequireAuth, useAuth } from './auth';
+import { Layout } from './components/Layout';
 import { Cadastro } from './pages/Cadastro';
 import { Catalogo } from './pages/Catalogo';
 import { Conta } from './pages/Conta';
@@ -22,45 +23,33 @@ export function App() {
 
   return (
     <Routes>
-      {/* Mesma página do catálogo três vezes: o tipo vem da rota, não do estado. */}
-      <Route path="/" element={<Catalogo />} />
-      <Route path="/filmes" element={<Catalogo tipo="FILME" />} />
-      <Route path="/series" element={<Catalogo tipo="SERIE" />} />
-      <Route path="/titulo/:id" element={<Detalhe />} />
+      {/* Rota de layout: TopBar e moldura ficam aqui, não repetidas em cada página. */}
+      <Route element={<Layout />}>
+        {/* Mesma página do catálogo três vezes: o tipo vem da rota, não do estado. */}
+        <Route path="/" element={<Catalogo />} />
+        <Route path="/filmes" element={<Catalogo tipo="FILME" />} />
+        <Route path="/series" element={<Catalogo tipo="SERIE" />} />
+        <Route path="/titulo/:id" element={<Detalhe />} />
+
+        {/* Um RequireAuth para o grupo, em vez de um por rota. */}
+        <Route
+          element={
+            <RequireAuth>
+              <Outlet />
+            </RequireAuth>
+          }
+        >
+          <Route path="/filme/novo" element={<FilmeForm />} />
+          <Route path="/filme/:id/editar" element={<FilmeForm />} />
+          <Route path="/gerenciar" element={<Gerenciar />} />
+          <Route path="/conta" element={<Conta />} />
+        </Route>
+      </Route>
+
+      {/* Fora do layout: o AuthShell é a moldura destas duas, sem TopBar. */}
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Cadastro />} />
-      <Route
-        path="/filme/novo"
-        element={
-          <RequireAuth>
-            <FilmeForm />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/filme/:id/editar"
-        element={
-          <RequireAuth>
-            <FilmeForm />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gerenciar"
-        element={
-          <RequireAuth>
-            <Gerenciar />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/conta"
-        element={
-          <RequireAuth>
-            <Conta />
-          </RequireAuth>
-        }
-      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

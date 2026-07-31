@@ -32,9 +32,24 @@ export function TopBar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
+
   // Semeada pela URL: recarregar /?q=matrix tem que mostrar "matrix" na busca,
   // senão o catálogo aparece filtrado por um termo invisível.
-  const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
+  //
+  // A ressincronização não é enfeite. A TopBar vive na rota de layout e não
+  // remonta ao trocar de rota, então semear só na montagem deixava a caixa
+  // exibindo o termo anterior enquanto o catálogo já mostrava a lista sem filtro
+  // — input e resultado se contradizendo.
+  //
+  // Ajuste durante o render (padrão do React para estado derivado de prop), e não
+  // useEffect: evita o render extra com o valor velho já pintado na tela.
+  const qUrl = searchParams.get('q') ?? '';
+  const [query, setQuery] = useState(qUrl);
+  const [qAnterior, setQAnterior] = useState(qUrl);
+  if (qAnterior !== qUrl) {
+    setQAnterior(qUrl);
+    setQuery(qUrl);
+  }
   const menuRef = useRef<HTMLDivElement>(null);
 
   const active = getActive(location.pathname);
@@ -60,7 +75,9 @@ export function TopBar() {
     // Buscar dentro de /filmes ou /series não pode jogar o usuário de volta no
     // catálogo inteiro; de qualquer outra tela a busca cai em "/".
     const destino = ROTAS_CATALOGO.includes(location.pathname) ? location.pathname : '/';
-    navigate(`${destino}?q=${encodeURIComponent(query)}`);
+    // Busca vazia leva à rota limpa em vez de empurrar "?q=" para o histórico.
+    const termo = query.trim();
+    navigate(termo ? `${destino}?q=${encodeURIComponent(termo)}` : destino);
   }
 
   function handleLogout() {

@@ -1,7 +1,6 @@
 import {FormEvent, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Field} from '../components/Field';
-import {TopBar} from '../components/TopBar';
 import {useAuth} from '../auth';
 import {api, erroDeApi, mensagemGenerica} from '../api';
 
@@ -128,8 +127,6 @@ function ContaConteudo({
     }
 
     return (
-        <div className="relative min-h-screen pb-[70px]">
-            <TopBar/>
             <div
                 className="px-pad mx-auto flex w-full max-w-[calc(760px+var(--spacing-pad)*2)] flex-col gap-[22px] pt-[18px]">
                 <div>
@@ -287,6 +284,5 @@ function ContaConteudo({
                     )}
                 </section>
             </div>
-        </div>
     );
 }
