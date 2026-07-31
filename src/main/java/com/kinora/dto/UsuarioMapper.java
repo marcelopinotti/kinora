@@ -4,6 +4,9 @@ import com.kinora.domain.Usuario;
 
 public class UsuarioMapper {
 
+    private UsuarioMapper() {
+    }
+
     public static Usuario toRequest(UsuarioRequest request) {
         return Usuario.builder()
                 .nome(request.nome())

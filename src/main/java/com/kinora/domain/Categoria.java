@@ -15,10 +15,10 @@ public class Categoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    @Column(name = "nome", nullable = false,length = 100)
-    String nome;
+    @Column(name = "nome", nullable = false, length = 100)
+    private String nome;
 
 
 }

@@ -7,6 +7,9 @@ import java.util.List;
 
 public class FilmeMapper {
 
+    private FilmeMapper() {
+    }
+
     public static Filme toRequest(FilmeRequest request) {
 
         return Filme.builder()
@@ -14,6 +17,8 @@ public class FilmeMapper {
                 .descricao(request.descricao())
                 .dataLancamento(request.dataLancamento())
                 .nota(request.nota())
+                .tipo(request.tipo())
+                .posterUrl(request.posterUrl())
                 .build();
 
     }
@@ -36,6 +41,8 @@ public class FilmeMapper {
                 .nota(filme.getNota())
                 .titulo(filme.getTitulo())
                 .dataLancamento(filme.getDataLancamento())
+                .tipo(filme.getTipo())
+                .posterUrl(filme.getPosterUrl())
                 .categorias(categories)
                 .streamings(streamings)
                 .build();

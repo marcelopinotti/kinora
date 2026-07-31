@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "create-readme": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/create-readme/SKILL.md",
+      "computedHash": "d0ece1b2164ce1376e4ab6e98d6ac079df3a2a94f5f02224362b6a1ce2516ae9"
+    },
+    "java-springboot": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/java-springboot/SKILL.md",
+      "computedHash": "f1b9c6b1277178fc33e5a612761c1cd1cf6ab5f946d05d69d52026d142c0a0c1"
+    },
+    "spring-boot-engineer": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/spring-boot-engineer/SKILL.md",
+      "computedHash": "ed065f5db45afe9dc2739cff713927d0b6b6ad3e667bdf7b40340d1a5543bb0f"
+    },
+    "springboot-security": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/springboot-security/SKILL.md",
+      "computedHash": "8658b8f195491f52487298e7b50fb6bb05ad5c9f64708dbbdaefa5f0540b4d39"
+    }
+  }
+}

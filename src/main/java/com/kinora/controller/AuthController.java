@@ -7,13 +7,12 @@ import com.kinora.dto.LoginResponse;
 import com.kinora.dto.UsuarioRequest;
 import com.kinora.dto.UsuarioResponse;
 import com.kinora.dto.UsuarioUpdateRequest;
-import com.kinora.service.TokenService;
 import com.kinora.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UsuarioService usuarioService;
-    private final TokenService tokenService;
 
     @PostMapping("/registrar")
     public ResponseEntity<UsuarioResponse> registrar(@RequestBody @Valid UsuarioRequest request) {
@@ -35,26 +33,26 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UsuarioResponse> me(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
-        return ResponseEntity.ok(usuarioService.findById(tokenService.usuarioId(authorization)));
+    public ResponseEntity<UsuarioResponse> me(@AuthenticationPrincipal Long usuarioId) {
+        return ResponseEntity.ok(usuarioService.findById(usuarioId));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UsuarioResponse> atualizarMe(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+    public ResponseEntity<UsuarioResponse> atualizarMe(@AuthenticationPrincipal Long usuarioId,
                                                        @RequestBody @Valid UsuarioUpdateRequest request) {
-        return ResponseEntity.ok(usuarioService.atualizar(tokenService.usuarioId(authorization), request));
+        return ResponseEntity.ok(usuarioService.atualizar(usuarioId, request));
     }
 
     @PatchMapping("/me/senha")
-    public ResponseEntity<Void> alterarSenha(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+    public ResponseEntity<Void> alterarSenha(@AuthenticationPrincipal Long usuarioId,
                                              @RequestBody @Valid AlterarSenhaRequest request) {
-        usuarioService.alterarSenha(tokenService.usuarioId(authorization), request);
+        usuarioService.alterarSenha(usuarioId, request);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Void> deletarMe(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
-        usuarioService.deletar(tokenService.usuarioId(authorization));
+    public ResponseEntity<Void> deletarMe(@AuthenticationPrincipal Long usuarioId) {
+        usuarioService.deletar(usuarioId);
         return ResponseEntity.noContent().build();
     }
 }

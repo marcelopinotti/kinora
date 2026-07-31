@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="background:#141417; border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:30px 30px 26px; display:flex; flex-direction:column; gap:20px">
+  <div>
+    <h2 style="margin:0; font-size:24px; font-weight:800; letter-spacing:-.02em">{{ titulo }}</h2>
+    <p style="margin:6px 0 0; font-size:14px; color:#9a9aa1">{{ subtitulo }}</p>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:7px">
+    <div style="display:flex; gap:10px">
+      <input value="{{ novo }}" onChange="{{ onNovo }}" placeholder="{{ placeholder }}" maxLength="100" style="flex:1; height:52px; border-radius:8px; border:1px solid {{ erroNovo.border }}; background:#26262a; color:#fff; font-size:15px; padding:0 18px; outline:none" style-focus="border-color:#E8502A" />
+      <button onClick="{{ criar }}" style="height:52px; padding:0 24px; border:0; border-radius:8px; background:#E8502A; color:#fff; font-size:15px; font-weight:700; cursor:pointer; white-space:nowrap" style-hover="background:#ff6038">Adicionar</button>
+    </div>
+    <sc-if value="{{ erroNovo.on }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:0; font-size:13px; font-weight:600; color:#FF6A4A">{{ erroNovo.msg }}</p>
+    </sc-if>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:8px">
+    <sc-for list="{{ itens }}" as="it" hint-placeholder-count="4">
+      <div style="border-radius:10px; background:#1b1b1f; border:1px solid {{ it.border }}; padding:13px 14px 13px 16px; display:flex; flex-direction:column; gap:9px">
+        <sc-if value="{{ it.viewing }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; align-items:center; gap:14px">
+            <span style="flex:1; font-size:15px; font-weight:600; color:#eaeaef">{{ it.nome }}</span>
+            <span style="font-family:ui-monospace, monospace; font-size:11px; color:#6d6d74">#{{ it.id }}</span>
+            <div style="display:flex; gap:8px">
+              <button onClick="{{ it.editar }}" style="height:34px; padding:0 14px; border:1px solid rgba(255,255,255,.14); border-radius:7px; background:transparent; color:#d8d8dd; font-size:13px; font-weight:700; cursor:pointer" style-hover="border-color:#E8502A; color:#fff">Editar</button>
+              <button onClick="{{ it.excluir }}" style="height:34px; padding:0 14px; border:1px solid rgba(255,106,74,.35); border-radius:7px; background:transparent; color:#FF8763; font-size:13px; font-weight:700; cursor:pointer" style-hover="background:rgba(232,80,42,.14)">Excluir</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ it.editing }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+            <input value="{{ it.draft }}" onChange="{{ it.onDraft }}" maxLength="100" style="flex:1; min-width:160px; height:40px; border-radius:7px; border:1px solid #E8502A; background:#26262a; color:#fff; font-size:15px; padding:0 14px; outline:none" />
+            <button onClick="{{ it.salvar }}" style="height:40px; padding:0 16px; border:0; border-radius:7px; background:#E8502A; color:#fff; font-size:13px; font-weight:700; cursor:pointer" style-hover="background:#ff6038">Salvar</button>
+            <button onClick="{{ it.cancelar }}" style="height:40px; padding:0 16px; border:1px solid rgba(255,255,255,.14); border-radius:7px; background:transparent; color:#b6b6bc; font-size:13px; font-weight:700; cursor:pointer" style-hover="color:#fff">Cancelar</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ it.err.on }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0; font-size:13px; font-weight:600; color:#FF6A4A; line-height:1.45">{{ it.err.msg }}</p>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <p style="margin:0; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:#6d6d74; font-weight:700">{{ contagem }}</p>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:560,&quot;height&quot;:560},&quot;titulo&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Categorias&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;subtitulo&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Usadas para classificar os filmes do catálogo.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;placeholder&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nome da categoria&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;entidade&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;categoria&quot;,&quot;streaming&quot;],&quot;default&quot;:&quot;categoria&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;itens&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{id:number,nome:string,usos:number}[]&quot;}}">
+class Component extends DCLogic {
+  state = { items: null, novo: '', erroNovo: '', editingId: null, draft: '', rowErr: {} };
+
+  get items() { return this.state.items || this.props.itens || []; }
+
+  setItems(items, extra) { this.setState(Object.assign({ items }, extra || {})); }
+
+  criar = (e) => {
+    e.preventDefault();
+    const n = this.state.novo.trim();
+    if (!n) return this.setState({ erroNovo: 'Informe um nome.' });
+    if (n.length > 100) return this.setState({ erroNovo: 'O nome deve ter no máximo 100 caracteres.' });
+    if (this.items.some(i => i.nome.toLowerCase() === n.toLowerCase())) return this.setState({ erroNovo: 'Já existe um item com esse nome.' });
+    const id = this.items.reduce((m, i) => Math.max(m, i.id), 0) + 1;
+    this.setItems(this.items.concat([{ id, nome: n, usos: 0 }]), { novo: '', erroNovo: '' });
+  };
+
+  err(k, msg) { return { on: !!msg, msg: msg || '', border: msg ? '#FF6A4A' : 'rgba(255,255,255,.08)' }; }
+
+  renderVals() {
+    const editingId = this.state.editingId;
+    const rowErr = this.state.rowErr;
+    const itens = this.items.map(it => {
+      const editing = editingId === it.id;
+      const e = rowErr[it.id];
+      return {
+        id: it.id, nome: it.nome, editing, viewing: !editing,
+        draft: editing ? this.state.draft : it.nome,
+        border: e ? 'rgba(255,106,74,.4)' : 'rgba(255,255,255,.05)',
+        err: { on: !!e, msg: e || '' },
+        onDraft: (ev) => this.setState({ draft: ev.target.value }),
+        editar: (ev) => { ev.preventDefault(); this.setState({ editingId: it.id, draft: it.nome, rowErr: {} }); },
+        cancelar: (ev) => { ev.preventDefault(); this.setState({ editingId: null }); },
+        salvar: (ev) => {
+          ev.preventDefault();
+          const v = this.state.draft.trim();
+          if (!v) return this.setState({ rowErr: { [it.id]: 'Informe um nome.' } });
+          if (v.length > 100) return this.setState({ rowErr: { [it.id]: 'O nome deve ter no máximo 100 caracteres.' } });
+          this.setItems(this.items.map(x => x.id === it.id ? Object.assign({}, x, { nome: v }) : x), { editingId: null, rowErr: {} });
+        },
+        excluir: (ev) => {
+          ev.preventDefault();
+          if (it.usos > 0) {
+            const noun = (this.props.entidade || 'item');
+            return this.setState({ rowErr: { [it.id]: 'Não foi possível excluir: ' + it.nome + ' está em uso por ' + it.usos + (it.usos === 1 ? ' filme' : ' filmes') + '. Remova ' + (noun === 'streaming' ? 'este streaming' : 'esta categoria') + ' dos filmes antes.' } });
+          }
+          this.setItems(this.items.filter(x => x.id !== it.id), { rowErr: {}, editingId: null });
+        }
+      };
+    });
+    const n = itens.length;
+    return {
+      itens,
+      titulo: this.props.titulo || 'Itens',
+      subtitulo: this.props.subtitulo || '',
+      placeholder: this.props.placeholder || 'Nome',
+      novo: this.state.novo,
+      onNovo: (ev) => this.setState({ novo: ev.target.value, erroNovo: '' }),
+      criar: this.criar,
+      erroNovo: this.err('novo', this.state.erroNovo),
+      contagem: n + (n === 1 ? ' item cadastrado' : ' itens cadastrados')
+    };
+  }
+}
+
+</script>
+</body>
+</html>

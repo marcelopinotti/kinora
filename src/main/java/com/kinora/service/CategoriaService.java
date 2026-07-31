@@ -6,10 +6,12 @@ import com.kinora.dto.CategoriaRequest;
 import com.kinora.dto.CategoriaResponse;
 import com.kinora.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -18,7 +20,7 @@ public class CategoriaService {
 
     private final CategoriaRepository repository;
 
-
+    @Transactional(readOnly = true)
     public List<CategoriaResponse> findAll() {
         return repository.findAll()
                 .stream()
@@ -26,31 +28,38 @@ public class CategoriaService {
                 .toList();
     }
 
+    @Transactional
     public CategoriaResponse criar(CategoriaRequest dto) {
-        Categoria categoria = CategoriaMapper.toRequest(dto);
-        return CategoriaMapper.toResponse(repository.save(categoria));
-
-    }
-
-    public CategoriaResponse atualizar(Long id, CategoriaRequest dto) {
-        Optional<Categoria> categoriaOptional = repository.findById(id);
-        if (categoriaOptional.isPresent()) {
-            Categoria categoria = categoriaOptional.get();
-            categoria.setNome(dto.nome());
-            return CategoriaMapper.toResponse(repository.save(categoria));
-        } else {
-            throw new RuntimeException("Categoria não encontrada");
+        String nome = dto.nome().trim();
+        if (repository.existsByNomeIgnoreCase(nome)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Categoria já cadastrada");
         }
+        Categoria categoria = CategoriaMapper.toRequest(dto);
+        categoria.setNome(nome);
+        return CategoriaMapper.toResponse(repository.save(categoria));
     }
 
-    public CategoriaResponse findById(Long id){
+    @Transactional
+    public CategoriaResponse atualizar(Long id, CategoriaRequest dto) {
+        Categoria categoria = buscar(id);
+
+        String nome = dto.nome().trim();
+        if (repository.existsByNomeIgnoreCaseAndIdNot(nome, id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Categoria já cadastrada");
+        }
+
+        categoria.setNome(nome);
+        return CategoriaMapper.toResponse(repository.save(categoria));
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        // Categoria em uso estoura FK, que o GlobalExceptionHandler converte em 409.
+        repository.delete(buscar(id));
+    }
+
+    private Categoria buscar(Long id) {
         return repository.findById(id)
-                .map(CategoriaMapper::toResponse)
-                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria não encontrada"));
     }
-
-    public void deletar(Long id){
-        repository.deleteById(id);
-    }
-
 }

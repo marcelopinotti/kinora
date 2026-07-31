@@ -6,6 +6,9 @@ import com.kinora.domain.Streaming;
 
 public class StreamingMapper {
 
+    private StreamingMapper() {
+    }
+
     public static Streaming toRequest(StreamingRequest res){
         return Streaming.builder()
                 .nome(res.nome())

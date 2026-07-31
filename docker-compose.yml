@@ -1,0 +1,60 @@
+services:
+  db:
+    # 18 para casar com o Postgres do dump (o data dir não é compatível entre majors).
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: kinora
+      # Sem default, pelo mesmo motivo do JWT_SECRET: cair para postgres/postgres
+      # quando a variável falta sobe um banco com credencial conhecida — e a porta
+      # abaixo o publica no host.
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no ambiente}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no ambiente}
+    volumes:
+      # A imagem 18 espera o mount na raiz e cria o data dir por major dentro
+      # (/var/lib/postgresql/18/docker); montar em /data faz ela recusar subir.
+      - pgdata:/var/lib/postgresql
+    # O backend valida o schema no boot (ddl-auto: validate) e roda Flyway antes
+    # de tudo: subir com o banco ainda aceitando conexões derruba a aplicação.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d kinora']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      # Publicado para dar acesso a client de banco na máquina. Num ambiente que
+      # não seja a estação do dev, remova esta seção: o backend alcança o banco
+      # pela rede interna do compose, sem precisar de porta no host.
+      - '5433:5432'
+
+  backend:
+    build: .
+    environment:
+      # Dentro da rede do compose o host do banco é o nome do serviço. O yaml lê
+      # POSTGRES_HOST com default localhost, então basta apontar o host aqui.
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: kinora
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no ambiente}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no ambiente}
+      # Sem default de propósito: segredo ausente tem que derrubar o boot, não
+      # assinar token com um valor que está público no git. Mínimo de 32 bytes,
+      # validado no TokenService.
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no ambiente}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '8080:8080'
+
+  frontend:
+    build: ./frontend
+    # service_healthy e não a forma curta: o HEALTHCHECK do backend só passa
+    # depois do Flyway e da validação do schema, que é quando a API responde.
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '5173:80'
+
+volumes:
+  pgdata:
