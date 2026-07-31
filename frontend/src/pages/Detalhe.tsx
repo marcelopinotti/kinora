@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { useAuth } from '../auth';
@@ -70,7 +70,10 @@ export function Detalhe() {
           <div
             className="detalhe-bg"
             aria-hidden="true"
-            style={{ ['--poster' as any]: `url("${encodeURI(filme.posterUrl)}")` }}
+            // CSSProperties não aceita custom property no tipo; a asserção é no
+            // objeto inteiro em vez de `as any` na chave, para não desligar a
+            // checagem das demais propriedades.
+            style={{ '--poster': `url("${encodeURI(filme.posterUrl)}")` } as CSSProperties}
           />
         )}
         {/* Empilha antes de o texto ficar espremido ao lado do pôster de 300px. */}
