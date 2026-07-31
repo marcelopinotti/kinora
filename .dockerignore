@@ -1,0 +1,8 @@
+target/
+frontend/
+.git/
+.idea/
+.claude/
+.agents/
+design_handoff_kinora/
+.env

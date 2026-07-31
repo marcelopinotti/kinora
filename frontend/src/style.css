@@ -1,0 +1,381 @@
+@import 'tailwindcss';
+
+/* ── Tokens ─────────────────────────────────────────────────────────
+   Valores fixados pelo handoff (design_handoff_kinora/README.md).
+   Não improvisar cor nem tamanho aqui: o design é hifi.
+   Tudo que entra em @theme vira utilitário: bg-surface, text-t2,
+   border-border-3, shadow-card, px-pad.                              */
+@theme {
+  --color-bg: #08080a;
+  --color-surface: #141417;
+  --color-surface-2: #1b1b1f;
+  --color-surface-3: #1f1f24;
+  --color-menu: #17171b;
+  --color-input: #26262a;
+
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-2: rgba(255, 255, 255, 0.08);
+  --color-border-3: rgba(255, 255, 255, 0.14);
+
+  --color-accent: #e8502a;
+  --color-accent-hover: #ff6038;
+  --color-destructive: #d63c1c;
+  --color-destructive-hover: #ff4d26;
+  --color-error: #ff6a4a;
+  --color-error-soft: #ff8763;
+  --color-ok: #7bd389;
+
+  --color-t1: #ffffff;
+  --color-t2: #c9c9ce;
+  --color-t3: #9a9aa1;
+  --color-t4: #b6b6bc;
+  --color-muted: #8b8b90;
+  --color-muted-2: #6d6d74;
+
+  /* derivados do acento — antes viviam soltos em rgba() no meio do arquivo */
+  --color-accent-soft: rgba(232, 80, 42, 0.16);
+  --color-accent-line: rgba(232, 80, 42, 0.5);
+  /* véu escuro sobre imagem: garante o contraste que o pôster não garante */
+  --color-scrim: rgba(8, 8, 10, 0.72);
+
+  --font-sans: 'Manrope', Helvetica, Arial, sans-serif;
+  --font-display: 'Archivo Black', Helvetica, Arial, sans-serif;
+
+  /* padding lateral: 48px no desktop do handoff, encolhendo até 16px */
+  --spacing-pad: clamp(16px, 4vw, 48px);
+
+  --shadow-card: 0 40px 90px rgba(0, 0, 0, 0.6);
+  --shadow-menu: 0 20px 50px rgba(0, 0, 0, 0.65);
+  --shadow-mark: 0 6px 18px rgba(232, 80, 42, 0.35);
+}
+
+/* ── Base ───────────────────────────────────────────────────────── */
+@layer base {
+  html,
+  body {
+    background: var(--color-bg);
+    /* piso de qualidade: zero scroll horizontal em qualquer largura.
+       'clip' e não 'hidden': hidden faria overflow-y virar auto, criando um
+       contexto de rolagem que quebra o position:sticky da topbar. */
+    overflow-x: clip;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-t1);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sem regra global de cor em <a>: link colorido é text-accent no JSX.
+     A regra global obrigava override em todo <a> que não era link de texto
+     (card inteiro, botões) — eram 8 linhas só brigando com a cascata. */
+
+  ::placeholder {
+    color: var(--color-muted);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2e;
+    border-radius: 8px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ── Widgets ────────────────────────────────────────────────────────
+   Só o que se repete em 3+ lugares. Layout de tela é utilitário no JSX;
+   isto aqui existe para o botão não ser 12 cópias da mesma string.      */
+@layer components {
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border-0
+      text-[15px] font-bold whitespace-nowrap transition-colors disabled:cursor-progress
+      disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-accent hover:not-disabled:bg-accent-hover h-13 px-[30px] text-white;
+  }
+  .btn-ghost {
+    @apply border-border-3 text-t4 h-13 border bg-transparent px-5 hover:not-disabled:text-white;
+  }
+  .btn-danger {
+    @apply bg-destructive hover:not-disabled:bg-destructive-hover h-[50px] px-6 text-white;
+  }
+  .btn-danger-outline {
+    @apply text-error-soft h-13 border border-[rgba(255,106,74,0.5)] bg-transparent px-[26px]
+      hover:not-disabled:bg-[rgba(232,80,42,0.14)];
+  }
+  .btn-outline {
+    @apply hover:not-disabled:border-accent border border-[rgba(255,255,255,0.16)] bg-transparent text-white;
+  }
+  /* CTA alto das telas de auth e do formulário de filme */
+  .btn-tall {
+    @apply h-15 text-[17px];
+  }
+  .btn-sm {
+    @apply h-10 rounded-[7px] px-[18px] text-sm;
+  }
+
+  /* botões de linha do Gerenciar */
+  .btn-row {
+    @apply border-border-3 hover:not-disabled:border-accent inline-flex h-[34px] cursor-pointer
+      items-center justify-center rounded-[7px] border bg-transparent px-3.5 text-[13px]
+      font-bold text-[#d8d8dd] transition-colors hover:not-disabled:text-white;
+  }
+  .btn-row-danger {
+    @apply text-error-soft border-[rgba(255,106,74,0.35)]
+      hover:not-disabled:border-[rgba(255,106,74,0.35)] hover:not-disabled:bg-[rgba(232,80,42,0.14)]
+      hover:not-disabled:text-[color:var(--color-error-soft)];
+  }
+  .btn-row-solid {
+    @apply bg-accent hover:not-disabled:bg-accent-hover h-10 border-0 px-4 text-white;
+  }
+  .btn-row-plain {
+    @apply text-t4 h-10 px-4 hover:not-disabled:text-white;
+  }
+
+  .input,
+  .textarea {
+    @apply border-border-2 bg-input focus:border-accent w-full rounded-lg border text-base
+      text-white transition-colors outline-none;
+  }
+  .input {
+    @apply h-14 px-[18px];
+  }
+  .textarea {
+    @apply resize-y px-[18px] py-4 leading-relaxed;
+  }
+  .input-invalid {
+    @apply border-error;
+  }
+  /* inputs das telas de auth são mais altos */
+  .input-auth {
+    @apply h-15 px-5;
+  }
+  /* inputs do formulário de filme */
+  .input-form {
+    @apply h-[58px];
+  }
+
+  .chip {
+    @apply border-border-2 bg-surface-3 text-t4 inline-flex h-10 cursor-pointer items-center
+      justify-center rounded-full border px-[18px] text-sm font-bold transition-colors hover:text-white;
+  }
+  /* pílulas do filtro do catálogo: 8px 16px / 13px no handoff */
+  .chip-filter {
+    @apply bg-surface-2 h-auto px-4 py-2 text-[13px];
+  }
+  /* DEPOIS de .chip-filter de propósito: as três têm especificidade (0,1,0), então
+     quem ganha é a última declarada. Se .chip-on subir, o filtro ativo do catálogo
+     volta a renderizar cinza em vez de laranja. */
+  .chip-on {
+    @apply bg-accent border-accent text-white;
+  }
+
+  .pill {
+    @apply bg-surface-3 text-t4 rounded-[5px] px-3 py-[5px] text-[11px] font-bold tracking-[0.12em] uppercase;
+  }
+
+  .field-label {
+    @apply text-t2 text-[13px] font-bold;
+  }
+  .field-error {
+    @apply text-error text-[13px] leading-[1.45] font-semibold;
+  }
+  .field-hint {
+    @apply text-muted text-[13px];
+  }
+  .field-ok {
+    @apply text-ok text-sm font-bold;
+  }
+  .eyebrow {
+    @apply text-accent text-[13px] font-bold tracking-[0.18em] uppercase;
+  }
+  /* "Carregando...", "Nenhum título encontrado.", falhas de carga */
+  .state-msg {
+    @apply text-t3 px-pad py-10 text-[15px];
+  }
+  .state-error {
+    @apply text-error font-semibold;
+  }
+
+  /* superfícies: card de filme, painel, form, lista do Gerenciar */
+  .surface {
+    @apply bg-surface border-border rounded-[14px] border;
+  }
+}
+
+/* ── Arte ───────────────────────────────────────────────────────────
+   O que não vira utilitário legível: clip-path, gradiente em texto,
+   pseudo-elementos e mask. Traduzir isto para bg-[radial-gradient(...)]
+   deixaria o JSX ilegível sem ganhar nada.                            */
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(150deg, #ff7a45, var(--color-destructive));
+  box-shadow: var(--shadow-mark);
+  flex: none;
+}
+.logo-mark > i {
+  display: block;
+  background: #fff;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.logo-word {
+  font-family: var(--font-display);
+  letter-spacing: -0.005em;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff3ec 0%, #f0bfa8 55%, #d97847 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* hachura do placeholder "arte do título" (handoff) — onde falta pôster */
+.art-empty {
+  background: repeating-linear-gradient(115deg, #1d1d21 0 9px, #202025 9px 18px);
+}
+
+/* Fundo das telas de auth: cinco camadas decorativas empilhadas. */
+.auth-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  background: radial-gradient(120% 85% at 78% 8%, #3a1206 0%, #1a0a08 42%, #08080a 78%);
+}
+.auth-halo-a,
+.auth-halo-b {
+  position: absolute;
+  border-radius: 50%;
+}
+.auth-halo-a {
+  top: -30%;
+  right: -10%;
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, rgba(232, 80, 42, 0.34) 0%, rgba(214, 60, 28, 0.1) 45%, transparent 70%);
+  filter: blur(20px);
+}
+.auth-halo-b {
+  bottom: -38%;
+  left: -18%;
+  width: 62vw;
+  height: 62vw;
+  background: radial-gradient(circle, rgba(255, 122, 69, 0.16) 0%, rgba(120, 40, 20, 0.08) 50%, transparent 72%);
+  filter: blur(30px);
+}
+.auth-hatch {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background: repeating-linear-gradient(102deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 74px);
+}
+/* sete faixas sugerindo película — decorativas */
+.auth-strips {
+  position: absolute;
+  top: -14%;
+  left: -6%;
+  width: 120%;
+  height: 130%;
+  transform: rotate(-11deg);
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+  opacity: 0.32;
+}
+.auth-strips > i {
+  display: block;
+  height: 78px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(232, 80, 42, 0.06) 35%,
+    rgba(255, 255, 255, 0.022) 72%,
+    transparent
+  );
+}
+.auth-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(115% 80% at 50% 46%, transparent 8%, rgba(8, 8, 10, 0.62) 62%, rgba(4, 4, 6, 0.92) 100%);
+}
+
+/* O pôster do próprio título vira atmosfera do topo: ampliado, desfocado e
+   dissolvido em bg. Sobe atrás da topbar (z-index 8, gradiente próprio) para a
+   cor começar na primeira linha. overflow:hidden contém o sangramento do blur. */
+.detalhe-bg {
+  position: absolute;
+  inset: -100px 0 auto 0;
+  height: clamp(420px, 62vh, 720px);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+/* camada 1: o pôster. inset negativo porque a borda do blur é translúcida */
+.detalhe-bg::before {
+  content: '';
+  position: absolute;
+  inset: -14%;
+  background-image: var(--poster, none);
+  background-size: cover;
+  background-position: 50% 26%;
+  filter: blur(48px) saturate(0.85) brightness(0.55);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 58%, transparent 92%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.6) 58%, transparent 92%);
+}
+/* camada 2: o véu. É ele que garante o contraste — pôster claro ou escuro,
+   o texto por cima nunca depende do brilho da imagem. */
+.detalhe-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 10, 0.55) 0%,
+    rgba(8, 8, 10, 0.78) 46%,
+    rgba(8, 8, 10, 0.94) 78%,
+    var(--color-bg) 100%
+  );
+}
+@media (max-width: 860px) {
+  .detalhe-bg {
+    height: clamp(360px, 48vh, 520px);
+  }
+}
+
+/* reforço de legibilidade sobre o desfoque, além do véu */
+.on-poster {
+  text-shadow: 0 2px 16px rgba(8, 8, 10, 0.55);
+}
+
+/* separador • entre os metadados de texto do detalhe */
+.dot-sep > * + *::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: var(--color-muted-2);
+  vertical-align: middle;
+}

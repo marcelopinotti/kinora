@@ -3,13 +3,9 @@ package com.kinora.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.jspecify.annotations.Nullable;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -18,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class Usuario implements UserDetails {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,41 +33,9 @@ public class Usuario implements UserDetails {
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
-    }
-
-    @Override
-    public @Nullable String getPassword() {
-        return "";
-    }
-
-    @Override
-    public String getUsername() {
-        return "";
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-
-    }
+    // Espelha o que Filme já tinha. Sem isto não havia registro de quando a conta
+    // — ou a senha — mudou pela última vez.
+    @UpdateTimestamp
+    @Column(name = "alterado_em")
+    private LocalDateTime alteradoEm;
 }

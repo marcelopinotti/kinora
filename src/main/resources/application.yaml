@@ -3,19 +3,47 @@ spring:
     name: kinora
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/kinora
+    # Host/porta/base por variável para o mesmo yaml servir a execução local e ao
+    # compose (onde o host é o nome do serviço, "db"), sem depender de sobrescrever
+    # a URL inteira por fora.
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:kinora}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    # Desligado: mantinha a sessão aberta até a resposta ser escrita, o que escondia
+    # o N+1 das coleções de Filme em vez de resolvê-lo. Com isto em false, todo
+    # método que toca coleção lazy precisa de @Transactional — os services têm.
+    open-in-view: false
+    show-sql: false
     properties:
-        hibernate:
-          dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Carrega as coleções lazy de até 50 filmes por query em vez de uma por
+        # filme: a listagem do catálogo cai de 1+2N para um punhado de queries.
+        # Preferido a JOIN FETCH porque buscar dois List de uma vez levantaria
+        # MultipleBagFetchException.
+        default_batch_fetch_size: 50
 
   flyway:
     enabled: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiracao: 8h
+
+---
+# Perfil dev: SQL no log só aqui. Ligado por padrão para todos os ambientes, como
+# estava antes, isso vaza a forma das queries no log de produção.
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

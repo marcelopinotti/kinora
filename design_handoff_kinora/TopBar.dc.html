@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex; align-items:center; gap:26px; flex-wrap:wrap; padding:20px 48px; background:linear-gradient(#0b0b0e 62%, rgba(11,11,14,0)); position:sticky; top:0; z-index:8">
+  <a href="#" onClick="{{ nav.goCatalog }}" style="display:flex; align-items:center; gap:8px; text-decoration:none">
+    <span style="width:32px; height:32px; border-radius:10px; background:linear-gradient(150deg,#FF7A45,#D63C1C); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(232,80,42,.35)"><span style="width:10px; height:11px; background:#fff; clip-path:polygon(0 0, 100% 50%, 0 100%)"></span></span>
+    <span style="font-family:'Archivo Black', Helvetica, sans-serif; font-size:24px; letter-spacing:-.005em; line-height:1; background:linear-gradient(180deg,#FFF3EC 0%,#F0BFA8 55%,#D97847 100%); -webkit-background-clip:text; background-clip:text; color:transparent">KINORA</span>
+  </a>
+
+  <nav style="display:flex; flex-wrap:wrap; align-items:center; gap:22px; font-size:15px; min-width:0">
+    <a href="#" onClick="{{ nav.goCatalog }}" style="color:{{ cCatalog }}; font-weight:700" style-hover="color:#fff">Início</a>
+    <a href="#" onClick="{{ nav.goCatalog }}" style="color:#b6b6bc; font-weight:500" style-hover="color:#fff">Filmes</a>
+    <a href="#" onClick="{{ nav.goCatalog }}" style="color:#b6b6bc; font-weight:500" style-hover="color:#fff">Séries</a>
+    <a href="#" onClick="{{ nav.goCatalog }}" style="color:#b6b6bc; font-weight:500" style-hover="color:#fff">Novidades</a>
+    <sc-if value="{{ logged }}" hint-placeholder-val="{{ true }}">
+      <span style="display:flex; align-items:center; gap:22px">
+        <span style="width:1px; height:16px; background:rgba(255,255,255,.14)"></span>
+        <a href="#" onClick="{{ nav.goAdd }}" style="color:{{ cAdd }}; font-weight:600" style-hover="color:#fff">Cadastrar filme</a>
+        <a href="#" onClick="{{ nav.goGerenciar }}" style="color:{{ cGerenciar }}; font-weight:600" style-hover="color:#fff">Gerenciar</a>
+      </span>
+    </sc-if>
+  </nav>
+
+  <div style="flex:1; min-width:12px"></div>
+
+  <div style="display:flex; align-items:center; gap:12px; flex:1 1 auto; max-width:340px; min-width:140px; height:44px; padding:0 16px; border-radius:8px; background:#1b1b1f; border:1px solid rgba(255,255,255,.07)">
+    <span style="width:13px; height:13px; border-radius:50%; border:2px solid #8b8b90; flex:none"></span>
+    <input placeholder="Buscar títulos, gêneros, pessoas" style="flex:1; background:transparent; border:0; outline:none; color:#fff; font-size:14px" />
+  </div>
+
+  <sc-if value="{{ logged }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative">
+      <button onClick="{{ toggleMenu }}" style="width:40px; height:40px; border:0; border-radius:6px; background:#E8502A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; cursor:pointer">H</button>
+      <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute; top:50px; right:0; width:216px; padding:8px; border-radius:12px; background:#17171b; border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 50px rgba(0,0,0,.65); display:flex; flex-direction:column; gap:2px; z-index:20">
+          <div style="padding:10px 12px 12px; border-bottom:1px solid rgba(255,255,255,.07); margin-bottom:6px">
+            <p style="margin:0; font-size:14px; font-weight:700">Horácio Meireles</p>
+            <p style="margin:3px 0 0; font-size:12px; color:#8b8b90">horacio@kinora.com</p>
+          </div>
+          <a href="#" onClick="{{ nav.goConta }}" style="padding:9px 12px; border-radius:7px; font-size:14px; color:#d8d8dd; font-weight:600" style-hover="background:#22222a; color:#fff">Minha conta</a>
+          <a href="#" onClick="{{ nav.goGerenciar }}" style="padding:9px 12px; border-radius:7px; font-size:14px; color:#d8d8dd; font-weight:600" style-hover="background:#22222a; color:#fff">Gerenciar</a>
+          <a href="#" onClick="{{ nav.goAdd }}" style="padding:9px 12px; border-radius:7px; font-size:14px; color:#d8d8dd; font-weight:600" style-hover="background:#22222a; color:#fff">Cadastrar filme</a>
+          <a href="#" onClick="{{ sair }}" style="margin-top:4px; padding:9px 12px; border-radius:7px; font-size:14px; color:#FF8763; font-weight:700; border-top:1px solid rgba(255,255,255,.07)" style-hover="background:rgba(232,80,42,.12)">Sair</a>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ visitor }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; align-items:center; gap:10px">
+      <button onClick="{{ nav.goLogin }}" style="height:40px; padding:0 18px; border:1px solid rgba(255,255,255,.16); border-radius:7px; background:transparent; color:#fff; font-size:14px; font-weight:700; cursor:pointer" style-hover="border-color:#E8502A">Entrar</button>
+      <button onClick="{{ nav.goSignup }}" style="height:40px; padding:0 18px; border:0; border-radius:7px; background:#E8502A; color:#fff; font-size:14px; font-weight:700; cursor:pointer" style-hover="background:#ff6038">Criar conta</button>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:140},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;catalog&quot;,&quot;add&quot;,&quot;edit&quot;,&quot;gerenciar&quot;,&quot;conta&quot;],&quot;default&quot;:&quot;catalog&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;logged&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;nav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string, (e:any)=&gt;void&gt;&quot;}}">
+class Component extends DCLogic {
+  state = { menuOpen: false };
+  renderVals() {
+    const a = this.props.active || 'catalog';
+    const logged = this.props.logged !== false;
+    const on = '#fff', off = '#b6b6bc';
+    return {
+      nav: this.props.nav || {},
+      logged, visitor: !logged,
+      menuOpen: this.state.menuOpen,
+      toggleMenu: (e) => { e.preventDefault(); this.setState(s => ({ menuOpen: !s.menuOpen })); },
+      sair: (e) => { e.preventDefault(); this.setState({ menuOpen: false }); const n = this.props.nav || {}; if (n.sair) n.sair(e); },
+      cCatalog: a === 'catalog' ? on : off,
+      cAdd: (a === 'add' || a === 'edit') ? on : off,
+      cGerenciar: a === 'gerenciar' ? on : off
+    };
+  }
+}
+
+</script>
+</body>
+</html>

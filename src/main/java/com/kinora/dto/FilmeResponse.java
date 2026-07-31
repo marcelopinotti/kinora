@@ -1,6 +1,7 @@
 package com.kinora.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kinora.domain.Tipo;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -14,6 +15,8 @@ public record FilmeResponse(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
         LocalDate dataLancamento,
         double nota,
+        Tipo tipo,
+        String posterUrl,
         List<CategoriaResponse> categorias,
         List<StreamingResponse> streamings) {
 

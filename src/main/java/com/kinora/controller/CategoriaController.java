@@ -4,6 +4,7 @@ package com.kinora.controller;
 import com.kinora.dto.CategoriaRequest;
 import com.kinora.dto.CategoriaResponse;
 import com.kinora.service.CategoriaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,19 +24,13 @@ public class CategoriaController {
         return ResponseEntity.ok(service.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoriaResponse> findById(@PathVariable Long id){
-        return ResponseEntity.ok(service.findById(id));
-    }
-
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CategoriaResponse> create(@RequestBody CategoriaRequest dto){
-        return ResponseEntity.ok(service.criar(dto));
+    public ResponseEntity<CategoriaResponse> criar(@Valid @RequestBody CategoriaRequest dto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoriaResponse> update(@PathVariable Long id, @RequestBody CategoriaRequest dto){
+    public ResponseEntity<CategoriaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaRequest dto){
         return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
