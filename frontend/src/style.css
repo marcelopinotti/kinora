@@ -139,7 +139,7 @@
   .btn-row-danger {
     @apply text-error-soft border-[rgba(255,106,74,0.35)]
       hover:not-disabled:border-[rgba(255,106,74,0.35)] hover:not-disabled:bg-[rgba(232,80,42,0.14)]
-      hover:not-disabled:text-[color:var(--color-error-soft)];
+      hover:not-disabled:text-error-soft;
   }
   .btn-row-solid {
     @apply bg-accent hover:not-disabled:bg-accent-hover h-10 border-0 px-4 text-white;

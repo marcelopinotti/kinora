@@ -1,5 +1,7 @@
 import {useMemo, useState} from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
+import {Estado} from '../components/Estado';
+import {RadioChips} from '../components/RadioChips';
 import {useAuth} from '../auth';
 import {api, type Categoria, type FilmeResponse, type Tipo} from '../api';
 import {useFetch} from '../hooks/useFetch';
@@ -48,33 +50,32 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
                     <h2 className="text-[clamp(24px,5vw,30px)] font-extrabold tracking-[-0.02em]">{copia.h2}</h2>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
-                    <button
-                        type="button"
-                        className={`chip chip-filter ${selecionada === null ? 'chip-on' : ''}`.trim()}
-                        onClick={() => setSelecionada(null)}
-                    >
-                        Todos
-                    </button>
-                    {(categorias ?? []).map((c) => (
-                        <button
-                            key={c.id}
-                            type="button"
-                            className={`chip chip-filter ${selecionada === c.id ? 'chip-on' : ''}`.trim()}
-                            onClick={() => setSelecionada(c.id)}
-                        >
-                            {c.nome}
-                        </button>
-                    ))}
+                    {/* Filtrar por categoria é seleção única — escolher uma desmarca a
+                        anterior — mas o estado só era transmitido pela cor do chip. */}
+                    <RadioChips
+                        legenda="Filtrar por categoria"
+                        legendaOculta
+                        opcoes={[
+                            {valor: null, rotulo: 'Todos'},
+                            ...(categorias ?? []).map((c) => ({valor: c.id, rotulo: c.nome})),
+                        ]}
+                        valor={selecionada}
+                        aoSelecionar={setSelecionada}
+                        chipClassName="chip-filter"
+                    />
                     {/* .field-error dá o tratamento visual de erro sem o padding de bloco do .state-msg */}
                     {erroCategorias && <p className="field-error">{erroCategorias}</p>}
                 </div>
             </div>
 
-            {erro && <p className="state-msg state-error">{erro}</p>}
-            {!erro && filmes === null && <p className="state-msg">Carregando catálogo...</p>}
-            {!erro && filmes !== null && filtrados.length === 0 && <p className="state-msg">{copia.vazio}</p>}
-            {!erro && filtrados.length > 0 && (
-                // auto-fill mantém as 4 colunas do handoff no desktop e degrada sozinho
+            <Estado
+                carregando={filmes === null}
+                erro={erro}
+                vazio={filtrados.length === 0}
+                mensagemCarregando="Carregando catálogo..."
+                mensagemVazio={copia.vazio}
+            >
+                {/* auto-fill mantém as 4 colunas do handoff no desktop e degrada sozinho */}
                 <div
                     className="px-pad grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-[22px] pt-[26px] xl:grid-cols-4">
                     {filtrados.map((f) => (
@@ -82,7 +83,7 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
                         <FilmeCard key={f.id} filme={f} logado={!!user} mostrarBadge={tipo === undefined}/>
                     ))}
                 </div>
-            )}
+            </Estado>
         </>
     );
 }
