@@ -72,7 +72,7 @@ export function Login() {
           Entrar na conta
         </button>
       </form>
-      <p className="text-t3 mt-[26px] text-center text-[15px]">
+      <p className="text-t3 mt-6.5 text-center text-[15px]">
         Novo por aqui?{' '}
         <Link to="/cadastro" className="text-accent font-bold hover:text-[#ff7350]">
           Assine agora

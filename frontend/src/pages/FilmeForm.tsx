@@ -219,7 +219,7 @@ export function FilmeForm() {
   }
 
   return (
-    <div className="relative min-h-screen pb-[70px]">
+    <div className="relative min-h-screen pb-17.5">
       <TopBar />
       <div className="px-pad mx-auto w-full max-w-[calc(1040px+var(--spacing-pad)*2)] pt-[18px]">
         <div className="bg-surface border-border rounded-[14px] border px-[clamp(20px,5vw,56px)] pt-[clamp(28px,5vw,46px)] pb-[clamp(32px,5vw,52px)]">
@@ -318,7 +318,7 @@ export function FilmeForm() {
                   (posterQuebrado ? (
                     <p className="text-error mt-3 text-[13px] font-semibold">Não foi possível carregar essa imagem.</p>
                   ) : (
-                    <div className="border-border-2 bg-surface-2 mt-3 aspect-[2/3] w-[132px] overflow-hidden rounded-[10px] border">
+                    <div className="border-border-2 bg-surface-2 mt-3 aspect-2/3 w-33 overflow-hidden rounded-[10px] border">
                       <img
                         className="block size-full object-cover"
                         src={posterUrl.trim()}
@@ -330,7 +330,7 @@ export function FilmeForm() {
               </div>
             </div>
 
-            <div className="mt-[30px] flex flex-col gap-[9px]">
+            <div className="mt-7.5 flex flex-col gap-2.25">
               <label className="field-label" id="filme-tipo-label">
                 Tipo{' '}
                 <span className="text-accent" aria-hidden="true">
@@ -357,7 +357,7 @@ export function FilmeForm() {
             </div>
 
             {/* handoff: os grupos seguintes vêm 4px mais colados (26px) que o primeiro */}
-            <div className="mt-[26px] flex flex-col gap-[9px]">
+            <div className="mt-6.5 flex flex-col gap-2.25">
               <label className="field-label" id="filme-categorias-label">
                 Categorias{' '}
                 <span className="text-accent" aria-hidden="true">
@@ -379,7 +379,7 @@ export function FilmeForm() {
               {fieldErrors.categorias && <p className="field-error">{fieldErrors.categorias}</p>}
             </div>
 
-            <div className="mt-[26px] flex flex-col gap-[9px]">
+            <div className="mt-6.5 flex flex-col gap-2.25">
               <label className="field-label" id="filme-streamings-label">
                 Streamings{' '}
                 <span className="text-accent" aria-hidden="true">
