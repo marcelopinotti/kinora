@@ -1,0 +1,27 @@
+# Stack descartável para testar migrations e schema num banco virgem.
+#
+#   docker compose -p kinora-teste -f docker-compose.yml -f docker-compose.test.yml up -d --build
+#   docker compose -p kinora-teste -f docker-compose.yml -f docker-compose.test.yml down -v
+#
+# O `-p kinora-teste` é o que importa: o volume vira `kinora-teste_pgdata`, então
+# o `down -v` acima destrói só ele e nunca encosta no `kinora_pgdata` de trabalho.
+# Este arquivo existe porque rodar `down -v` no projeto padrão já apagou o banco
+# real uma vez.
+#
+# As portas mudam para os dois stacks poderem coexistir; o banco não publica porta
+# nenhuma, já que ninguém precisa alcançá-lo de fora.
+#
+# `!override` em todas: sem ele o Compose CONCATENA a lista com a do arquivo base,
+# e o serviço tenta subir na porta nova E na antiga, falhando com "port is already
+# allocated" quando o stack de trabalho está no ar.
+services:
+  db:
+    ports: !override []
+
+  backend:
+    ports: !override
+      - '8081:8080'
+
+  frontend:
+    ports: !override
+      - '5174:80'
