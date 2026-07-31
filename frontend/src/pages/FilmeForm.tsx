@@ -1,10 +1,11 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChipGroup } from '../components/ChipGroup';
 import { Estado } from '../components/Estado';
 import { Field } from '../components/Field';
 import { RadioChips } from '../components/RadioChips';
 import { erroDeApi, type Tipo } from '../api';
+import { useFocoNoErro } from '../hooks/useFocoNoErro';
 import { useListasDoFormulario } from './filme/useListasDoFormulario';
 import { salvarFilme } from './filme/salvarFilme';
 import { useCamposFilme } from './filme/useCamposFilme';
@@ -74,6 +75,9 @@ export function FilmeForm() {
 
   const { categorias, streamings, erro: erroListas } = useListasDoFormulario();
 
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocoNoErro(fieldErrors, formRef);
+
   function setCampo<K extends keyof CamposFilme>(campo: K, valor: CamposFilme[K]) {
     setCampos((c) => ({ ...c, [campo]: valor }));
     setFieldErrors((e) => ({ ...e, [campo]: '' }));
@@ -120,8 +124,8 @@ export function FilmeForm() {
       <div className="bg-surface border-border rounded-[14px] border px-[clamp(20px,5vw,56px)] pt-[clamp(28px,5vw,46px)] pb-[clamp(32px,5vw,52px)]">
         <Cabecalho modo={modo} />
 
-        <form onSubmit={onSubmit}>
-          {erroListas && <p className="field-error">{erroListas}</p>}
+        <form ref={formRef} onSubmit={onSubmit}>
+          {erroListas && <p className="field-error" role="alert">{erroListas}</p>}
           <div className="grid grid-cols-2 gap-5 max-[720px]:grid-cols-1">
             <Field
               id="filme-titulo"
@@ -215,9 +219,9 @@ export function FilmeForm() {
           </div>
 
           <Acoes modo={modo} desabilitado={enviando || !!erroListas} />
-          {fieldErrors.geral && <p className="field-error">{fieldErrors.geral}</p>}
+          {fieldErrors.geral && <p className="field-error" role="alert">{fieldErrors.geral}</p>}
           {sucesso && (
-            <p className="text-ok mt-[18px] text-center text-sm font-bold">
+            <p className="text-ok mt-[18px] text-center text-sm font-bold" role="status">
               {modo === 'editar' ? 'Alterações salvas.' : 'Título cadastrado no catálogo.'}
             </p>
           )}

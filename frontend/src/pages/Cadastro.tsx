@@ -1,8 +1,9 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthShell } from '../components/AuthShell';
 import { Field } from '../components/Field';
 import { useAuth } from '../auth';
+import { useFocoNoErro } from '../hooks/useFocoNoErro';
 import { api, erroDeApi } from '../api';
 
 export function Cadastro() {
@@ -13,6 +14,9 @@ export function Cadastro() {
   const [senha, setSenha] = useState('');
   const [erros, setErros] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocoNoErro(erros, formRef);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -56,8 +60,8 @@ export function Cadastro() {
 
   return (
     <AuthShell titulo="Cadastre-se" sub="Milhares de filmes e séries. Cancele quando quiser.">
-      {erros.geral && <p className="field-error">{erros.geral}</p>}
-      <form onSubmit={onSubmit}>
+      {erros.geral && <p className="field-error" role="alert">{erros.geral}</p>}
+      <form ref={formRef} onSubmit={onSubmit}>
         <div className="flex flex-col gap-4">
           <Field
             id="cadastro-nome"

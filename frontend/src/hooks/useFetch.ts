@@ -1,5 +1,6 @@
 import { useEffect, useState, type DependencyList } from 'react';
 import { mensagemGenerica } from '../api';
+import * as React from "react";
 
 type Resultado<T> = {
   data: T | null;

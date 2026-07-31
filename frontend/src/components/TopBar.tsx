@@ -69,8 +69,12 @@ export function TopBar() {
         <Logo />
       </Link>
 
-      {/* Abaixo de 900px os links saem; os funcionais vivem no menu do avatar. */}
-      <nav className="flex min-w-0 flex-wrap items-center gap-[22px] text-[15px] max-[900px]:hidden">
+      {/* Início/Filmes/Séries não escondem em largura nenhuma: o menu do avatar só
+          existe para quem está logado E não lista as rotas de catálogo, então
+          escondê-las abaixo de 900px deixava o catálogo inalcançável no celular —
+          para visitante e para usuário logado. Escondidos ficam só Cadastrar e
+          Gerenciar, que o menu de fato oferece. */}
+      <nav className="flex min-w-0 flex-wrap items-center gap-[22px] text-[15px] max-[520px]:gap-4">
         <Link to="/" className={linkNav(active === 'catalog')}>
           Início
         </Link>
@@ -81,7 +85,7 @@ export function TopBar() {
           Séries
         </Link>
         {user && (
-          <>
+          <span className="flex items-center gap-[22px] max-[900px]:hidden">
             <span className="bg-border-3 h-4 w-px flex-none" />
             <Link to="/filme/novo" className={linkNav(active === 'add' || active === 'edit')}>
               Cadastrar título
@@ -89,7 +93,7 @@ export function TopBar() {
             <Link to="/gerenciar" className={linkNav(active === 'gerenciar')}>
               Gerenciar
             </Link>
-          </>
+          </span>
         )}
       </nav>
 

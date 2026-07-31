@@ -83,7 +83,7 @@ export function FormNovoItem({
         </button>
       </div>
       {erro && (
-        <p className="field-error" id={`${novoId}-erro`}>
+        <p className="field-error" id={`${novoId}-erro`} role="alert">
           {erro}
         </p>
       )}

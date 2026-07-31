@@ -84,7 +84,7 @@ export function ExcluirConta({ aoExcluir }: Readonly<{ aoExcluir: () => void }>)
             </button>
           </form>
           {erro && (
-            <p className="field-error" id="conta-confirmar-exclusao-erro">
+            <p className="field-error" id="conta-confirmar-exclusao-erro" role="alert">
               {erro}
             </p>
           )}

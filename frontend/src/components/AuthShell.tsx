@@ -19,7 +19,7 @@ export function AuthShell({ titulo, sub, children }: { titulo: string; sub?: str
         <div className="auth-vignette" />
       </div>
       {/* handoff: padding 40px 56px 56px — o pad-x global é 48px, aqui é 56px */}
-      <div className="relative z-[2] flex min-h-screen flex-col px-[clamp(16px,5vw,56px)] pt-[clamp(24px,4vw,40px)] pb-[clamp(32px,5vw,56px)]">
+      <div className="relative z-2 flex min-h-screen flex-col px-[clamp(16px,5vw,56px)] pt-[clamp(24px,4vw,40px)] pb-[clamp(32px,5vw,56px)]">
         <div className="flex items-center gap-2.75">
           <Logo size="lg" />
         </div>

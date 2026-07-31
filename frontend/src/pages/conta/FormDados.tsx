@@ -1,5 +1,6 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Field } from '../../components/Field';
+import { useFocoNoErro } from '../../hooks/useFocoNoErro';
 import { api, erroDeApi, type Usuario } from '../../api';
 
 export function FormDados({
@@ -11,6 +12,9 @@ export function FormDados({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvo, setSalvo] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocoNoErro(erros, formRef);
 
   function alterar(campo: string, aplicar: () => void) {
     aplicar();
@@ -55,7 +59,7 @@ export function FormDados({
   return (
     <section className="bg-surface border-border rounded-[14px] border px-[clamp(20px,4vw,32px)] pt-[clamp(22px,4vw,30px)] pb-[clamp(24px,4vw,32px)]">
       <h2 className="mb-[22px] text-[21px] font-extrabold tracking-[-0.02em]">Dados</h2>
-      <form onSubmit={onSubmit}>
+      <form ref={formRef} onSubmit={onSubmit}>
         {/* dentro de um painel o empilhamento é de campos: 18px, não os 22px entre painéis */}
         <div className="flex flex-col gap-[18px]">
           <Field
@@ -78,12 +82,12 @@ export function FormDados({
             error={erros.email}
           />
         </div>
-        {erros.geral && <p className="field-error">{erros.geral}</p>}
+        {erros.geral && <p className="field-error" role="alert">{erros.geral}</p>}
         <div className="mt-[26px] flex flex-wrap items-center gap-4">
           <button type="submit" className="btn btn-primary" disabled={salvando}>
             Salvar
           </button>
-          {salvo && <span className="field-ok">Dados atualizados.</span>}
+          {salvo && <span className="field-ok" role="status">Dados atualizados.</span>}
         </div>
       </form>
     </section>

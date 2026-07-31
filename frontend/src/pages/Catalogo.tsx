@@ -65,7 +65,7 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
                         chipClassName="chip-filter"
                     />
                     {/* .field-error dá o tratamento visual de erro sem o padding de bloco do .state-msg */}
-                    {erroCategorias && <p className="field-error">{erroCategorias}</p>}
+                    {erroCategorias && <p className="field-error" role="alert">{erroCategorias}</p>}
                 </div>
             </div>
 
@@ -135,7 +135,6 @@ function FilmeCard({
             Série
           </span>
                 )}
-                {/* moldura 2:3 com tamanho próprio: imagem quebrada não fura o layout */}
                 {/* moldura 2:3 com tamanho próprio: imagem quebrada não fura o layout */}
                 <Poster
                     url={filme.posterUrl}

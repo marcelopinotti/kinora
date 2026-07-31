@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ApiError, mensagemGenerica } from '../api';
 import type { Item } from './ListaSimples';
 
@@ -51,7 +51,26 @@ export function ItemRow({
   const [erro, setErro] = useState('');
   const [busy, setBusy] = useState(false);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  const botaoEditarRef = useRef<HTMLButtonElement>(null);
+  // Ao sair da edição o foco volta para "Editar", mas só se a saída partiu daqui:
+  // sem esta marca, uma linha qualquer roubaria o foco quando outra entrasse em
+  // edição, porque `editando` muda em todas as linhas ao mesmo tempo.
+  const saindoDaEdicao = useRef(false);
+
   const editId = `lista-edit-${entidade}-${item.id}`;
+
+  // Entrar em edição troca o botão por um input: sem levar o foco junto, ele fica
+  // no botão que acabou de sair do DOM e cai no <body>.
+  useEffect(() => {
+    if (editando) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    } else if (saindoDaEdicao.current) {
+      saindoDaEdicao.current = false;
+      botaoEditarRef.current?.focus();
+    }
+  }, [editando]);
 
   function iniciar() {
     setDraft(item.nome);
@@ -62,6 +81,7 @@ export function ItemRow({
   function cancelar() {
     // Cancelar não pode deixar a linha vermelha.
     setErro('');
+    saindoDaEdicao.current = true;
     aoCancelarEdicao();
   }
 
@@ -76,6 +96,7 @@ export function ItemRow({
       const atualizado = await atualizarItem(item.id, draft.trim());
       aoAtualizado(atualizado);
       setErro('');
+      saindoDaEdicao.current = true;
       aoCancelarEdicao();
     } catch (err) {
       setErro(mensagemErroNome(err));
@@ -108,6 +129,7 @@ export function ItemRow({
             Nome
           </label>
           <input
+            ref={inputRef}
             id={editId}
             className="input border-accent h-10 min-w-[160px] flex-1 rounded-[7px] px-3.5 text-[15px]"
             value={draft}
@@ -131,7 +153,7 @@ export function ItemRow({
           </span>
           <span className="text-muted-2 font-mono text-[11px]">#{item.id}</span>
           <div className="flex gap-2">
-            <button type="button" className="btn-row" onClick={iniciar} disabled={busy}>
+            <button type="button" ref={botaoEditarRef} className="btn-row" onClick={iniciar} disabled={busy}>
               Editar
             </button>
             <button type="button" className="btn-row btn-row-danger" onClick={excluir} disabled={busy}>
@@ -141,7 +163,7 @@ export function ItemRow({
         </div>
       )}
       {erro && (
-        <p className="field-error" id={`${editId}-erro`}>
+        <p className="field-error" id={`${editId}-erro`} role="alert">
           {erro}
         </p>
       )}

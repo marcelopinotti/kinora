@@ -17,11 +17,16 @@ export function MenuConta({ user }: Readonly<{ user: Usuario }>) {
   const navigate = useNavigate();
   const [aberto, setAberto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const gatilhoRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!aberto) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setAberto(false);
+      if (e.key !== 'Escape') return;
+      setAberto(false);
+      // Fechar por Escape devolve o foco ao avatar. Sem isto o foco fica num
+      // elemento que acabou de sair do DOM e o teclado recomeça do topo da página.
+      gatilhoRef.current?.focus();
     }
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false);
@@ -44,6 +49,7 @@ export function MenuConta({ user }: Readonly<{ user: Usuario }>) {
     <div className="relative" ref={ref}>
       <button
         type="button"
+        ref={gatilhoRef}
         className="bg-accent flex size-10 cursor-pointer items-center justify-center rounded-md border-0 text-[15px] font-extrabold text-white"
         onClick={() => setAberto((v) => !v)}
         aria-haspopup="menu"
