@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { MenuConta } from './MenuConta';
 import { Logo } from './Logo';
 
 type Active = 'catalog' | 'filmes' | 'series' | 'add' | 'edit' | 'gerenciar' | 'conta' | null;
@@ -8,8 +9,6 @@ type Active = 'catalog' | 'filmes' | 'series' | 'add' | 'edit' | 'gerenciar' | '
 // As três rotas de catálogo são irmãs: cada uma acende só o próprio link.
 const ROTAS_CATALOGO = ['/', '/filmes', '/series'];
 
-// Item do menu do avatar — 4 ocorrências com a mesma pinta.
-const ITEM_MENU = 'rounded-[7px] px-3 py-[9px] text-left text-sm font-semibold text-[#d8d8dd] hover:bg-[#22222a] hover:text-white';
 
 function linkNav(ativo: boolean): string {
   return `transition-colors hover:text-white ${ativo ? 'font-bold text-white' : 'text-t4'}`;
@@ -27,11 +26,10 @@ function getActive(pathname: string): Active {
 }
 
 export function TopBar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // Semeada pela URL: recarregar /?q=matrix tem que mostrar "matrix" na busca,
   // senão o catálogo aparece filtrado por um termo invisível.
@@ -50,25 +48,9 @@ export function TopBar() {
     setQAnterior(qUrl);
     setQuery(qUrl);
   }
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const active = getActive(location.pathname);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setMenuOpen(false);
-    }
-    function onClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    }
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onClick);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onClick);
-    };
-  }, [menuOpen]);
 
   function submitSearch(e: FormEvent) {
     e.preventDefault();
@@ -80,11 +62,6 @@ export function TopBar() {
     navigate(termo ? `${destino}?q=${encodeURIComponent(termo)}` : destino);
   }
 
-  function handleLogout() {
-    setMenuOpen(false);
-    logout();
-    navigate('/login');
-  }
 
   return (
     <div className="sticky top-0 z-[8] flex flex-wrap items-center gap-[clamp(14px,2vw,26px)] bg-linear-to-b from-[#0b0b0e] from-62% to-[rgba(11,11,14,0)] px-pad py-5">
@@ -137,42 +114,7 @@ export function TopBar() {
       </form>
 
       {user ? (
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            className="bg-accent flex size-10 cursor-pointer items-center justify-center rounded-md border-0 text-[15px] font-extrabold text-white"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-haspopup="true"
-            aria-expanded={menuOpen}
-            aria-label="Menu da conta"
-          >
-            {user.nome.trim().charAt(0).toUpperCase() || '?'}
-          </button>
-          {menuOpen && (
-            <div className="bg-menu shadow-menu absolute top-[50px] right-0 z-20 flex w-[216px] flex-col gap-0.5 rounded-xl border border-[rgba(255,255,255,0.1)] p-2">
-              <div className="mb-1.5 border-b border-[rgba(255,255,255,0.07)] px-3 pt-2.5 pb-3">
-                <p className="text-sm font-bold [overflow-wrap:anywhere]">{user.nome}</p>
-                <span className="text-muted mt-[3px] block text-xs [overflow-wrap:anywhere]">{user.email}</span>
-              </div>
-              <Link to="/conta" className={ITEM_MENU} onClick={() => setMenuOpen(false)}>
-                Minha conta
-              </Link>
-              <Link to="/gerenciar" className={ITEM_MENU} onClick={() => setMenuOpen(false)}>
-                Gerenciar
-              </Link>
-              <Link to="/filme/novo" className={ITEM_MENU} onClick={() => setMenuOpen(false)}>
-                Cadastrar título
-              </Link>
-              <button
-                type="button"
-                className="text-error-soft mt-1 cursor-pointer rounded-[7px] border-0 border-t border-[rgba(255,255,255,0.07)] bg-transparent px-3 py-[9px] text-left text-sm font-bold hover:bg-[rgba(232,80,42,0.12)]"
-                onClick={handleLogout}
-              >
-                Sair
-              </button>
-            </div>
-          )}
-        </div>
+        <MenuConta user={user} />
       ) : (
         <div className="flex items-center gap-2.5">
           <Link to="/login" className="btn btn-outline btn-sm">

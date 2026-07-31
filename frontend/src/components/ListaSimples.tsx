@@ -6,6 +6,19 @@ import { ItemRow } from './ItemRow';
 
 export type Item = { id: number; nome: string };
 
+/**
+ * Nome válido e ainda não usado. Pura e fora do componente: depende só da lista
+ * atual e do texto, não de nada do React.
+ */
+function validarNomeEm(items: readonly Item[], nome: string, ignorarId?: number): string | null {
+  const v = nome.trim();
+  if (!v) return 'Informe um nome.';
+  if (v.length > 100) return 'O nome deve ter no máximo 100 caracteres.';
+  const lower = v.toLowerCase();
+  const repetido = items.some((i) => i.id !== ignorarId && i.nome.toLowerCase() === lower);
+  return repetido ? 'Já existe um item com esse nome.' : null;
+}
+
 type ListaSimplesProps = {
   titulo: string;
   subtitulo: string;
@@ -43,17 +56,6 @@ export function ListaSimples({
   // de um objeto de módulo, então incluí-la só provocaria refetch a cada render.
   const { data: items, setData: setItems, erro: loadError } = useFetch<Item[]>(() => fetchItens(), []);
 
-  function validarNome(nome: string, ignorarId?: number): string | null {
-    const v = nome.trim();
-    if (!v) return 'Informe um nome.';
-    if (v.length > 100) return 'O nome deve ter no máximo 100 caracteres.';
-    const lower = v.toLowerCase();
-    if ((items ?? []).some((i) => i.id !== ignorarId && i.nome.toLowerCase() === lower)) {
-      return 'Já existe um item com esse nome.';
-    }
-    return null;
-  }
-
   const n = items?.length ?? 0;
 
   return (
@@ -67,7 +69,7 @@ export function ListaSimples({
         placeholder={placeholder}
         entidade={entidade}
         bloqueado={items === null}
-        validarNome={(nome) => validarNome(nome)}
+        validarNome={(nome) => validarNomeEm(items ?? [], nome)}
         criarItem={criarItem}
         aoCriado={(criado) => setItems((atual) => (atual ?? []).concat(criado))}
       />
@@ -87,7 +89,7 @@ export function ListaSimples({
               editando={editingId === it.id}
               aoIniciarEdicao={setEditingId}
               aoCancelarEdicao={() => setEditingId(null)}
-              validarNome={validarNome}
+              validarNome={(nome, ignorarId) => validarNomeEm(items ?? [], nome, ignorarId)}
               atualizarItem={atualizarItem}
               excluirItem={excluirItem}
               aoAtualizado={(atualizado) =>

@@ -1,6 +1,7 @@
 import {useMemo, useState} from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import {Estado} from '../components/Estado';
+import {Poster} from '../components/Poster';
 import {RadioChips} from '../components/RadioChips';
 import {useAuth} from '../auth';
 import {api, type Categoria, type FilmeResponse, type Tipo} from '../api';
@@ -135,22 +136,13 @@ function FilmeCard({
           </span>
                 )}
                 {/* moldura 2:3 com tamanho próprio: imagem quebrada não fura o layout */}
-                {filme.posterUrl ? (
-                    <div className="border-border bg-surface-2 aspect-[2/3] overflow-hidden rounded-[10px] border">
-                        <img
-                            className="block size-full object-cover"
-                            src={filme.posterUrl}
-                            alt={`Pôster de ${filme.titulo}`}
-                            loading="lazy"
-                        />
-                    </div>
-                ) : (
-                    <div
-                        className="art-empty border-border flex aspect-[2/3] items-center justify-center overflow-hidden rounded-[10px] border">
-                        <span
-                            className="text-muted-2 font-mono text-[10px] tracking-[0.1em] uppercase">arte do título</span>
-                    </div>
-                )}
+                {/* moldura 2:3 com tamanho próprio: imagem quebrada não fura o layout */}
+                <Poster
+                    url={filme.posterUrl}
+                    alt={`Pôster de ${filme.titulo}`}
+                    className="border-border rounded-[10px]"
+                    lazy
+                />
                 <h3 className="text-[22px] font-extrabold tracking-[-0.02em] [overflow-wrap:anywhere]">{filme.titulo}</h3>
                 {filme.descricao && (
                     <p className="text-sm leading-normal text-[#a2a2a9] [text-wrap:pretty]">{filme.descricao}</p>

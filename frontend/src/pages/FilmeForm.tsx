@@ -1,10 +1,12 @@
 import { FormEvent, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChipGroup } from '../components/ChipGroup';
+import { Estado } from '../components/Estado';
 import { Field } from '../components/Field';
 import { RadioChips } from '../components/RadioChips';
-import { api, erroDeApi, type Categoria, type FilmeRequest, type Streaming, type Tipo } from '../api';
-import { useFetch } from '../hooks/useFetch';
+import { erroDeApi, type Tipo } from '../api';
+import { useListasDoFormulario } from './filme/useListasDoFormulario';
+import { salvarFilme } from './filme/salvarFilme';
 import { useCamposFilme } from './filme/useCamposFilme';
 import { PosterField } from './filme/PosterField';
 import { CAMPOS_VAZIOS, maskData, validarFilme, type CamposFilme } from './filme/validarFilme';
@@ -30,10 +32,26 @@ const COPIA = {
   },
 } as const;
 
+function Acoes({ modo, desabilitado }: Readonly<{ modo: 'novo' | 'editar'; desabilitado: boolean }>) {
+  return (
+    <div className="mt-9.5 flex flex-wrap items-center justify-center gap-3.5">
+      {/* min-width 340px no handoff, mas nunca estourando a viewport */}
+      <button type="submit" className="btn btn-primary btn-tall min-w-[min(340px,100%)] px-[46px]" disabled={desabilitado}>
+        {modo === 'editar' ? 'Salvar alterações' : 'Cadastrar título'}
+      </button>
+      {modo === 'editar' && (
+        <Link to="/" className="btn btn-ghost btn-tall">
+          Cancelar
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function Cabecalho({ modo }: Readonly<{ modo: 'novo' | 'editar' }>) {
   const copia = COPIA[modo];
   return (
-    <div className="mb-[38px] text-center">
+    <div className="mb-9.5 text-center">
       <p className="eyebrow mb-2.5">{copia.eyebrow}</p>
       <h1 className="text-[clamp(26px,5vw,36px)] font-extrabold tracking-[-0.02em]">{copia.h1}</h1>
       <p className="text-t3 mt-2.5 text-[15px]">{copia.sub}</p>
@@ -54,15 +72,7 @@ export function FilmeForm() {
   const [sucesso, setSucesso] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // Sem as listas o formulário é insubmissível (validarFilme exige 1 de cada):
-  // o erro precisa aparecer e o envio ficar bloqueado, não falhar em silêncio.
-  const { data: listas, erro: erroListas } = useFetch<[Categoria[], Streaming[]]>(
-    () => Promise.all([api.categorias(), api.streamings()]),
-    [],
-    () => 'Não foi possível carregar as categorias e os streamings. Recarregue a página.',
-  );
-  const categorias = listas?.[0] ?? [];
-  const streamings = listas?.[1] ?? [];
+  const { categorias, streamings, erro: erroListas } = useListasDoFormulario();
 
   function setCampo<K extends keyof CamposFilme>(campo: K, valor: CamposFilme[K]) {
     setCampos((c) => ({ ...c, [campo]: valor }));
@@ -88,22 +98,8 @@ export function FilmeForm() {
 
     setEnviando(true);
     setSucesso(false);
-    const body: FilmeRequest = {
-      titulo: campos.titulo.trim(),
-      descricao: campos.descricao.trim(),
-      dataLancamento: campos.dataLancamento.trim(),
-      nota: Number(campos.nota.trim().replace(',', '.')),
-      tipo: campos.tipo,
-      posterUrl: campos.posterUrl.trim(),
-      categorias: campos.categorias,
-      streamings: campos.streamings,
-    };
     try {
-      if (modo === 'editar' && id) {
-        await api.atualizarFilme(Number(id), body);
-      } else {
-        await api.criarFilme(body);
-      }
+      await salvarFilme(modo, id, campos);
       setFieldErrors({});
       setSucesso(true);
       if (modo === 'novo') {
@@ -118,15 +114,8 @@ export function FilmeForm() {
     }
   }
 
-  if (modo === 'editar' && carregandoFilme) {
-    return <p className="state-msg">Carregando título...</p>;
-  }
-
-  if (modo === 'editar' && erroCarregar) {
-    return <p className="state-msg state-error">{erroCarregar}</p>;
-  }
-
   return (
+    <Estado carregando={carregandoFilme} erro={erroCarregar} mensagemCarregando="Carregando título...">
     <div className="px-pad mx-auto w-full max-w-[calc(1040px+var(--spacing-pad)*2)] pt-[18px]">
       <div className="bg-surface border-border rounded-[14px] border px-[clamp(20px,5vw,56px)] pt-[clamp(28px,5vw,46px)] pb-[clamp(32px,5vw,52px)]">
         <Cabecalho modo={modo} />
@@ -225,21 +214,7 @@ export function FilmeForm() {
             </p>
           </div>
 
-          <div className="mt-[38px] flex flex-wrap items-center justify-center gap-3.5">
-            {/* min-width 340px no handoff, mas nunca estourando a viewport */}
-            <button
-              type="submit"
-              className="btn btn-primary btn-tall min-w-[min(340px,100%)] px-[46px]"
-              disabled={enviando || !!erroListas}
-            >
-              {modo === 'editar' ? 'Salvar alterações' : 'Cadastrar título'}
-            </button>
-            {modo === 'editar' && (
-              <Link to="/" className="btn btn-ghost btn-tall">
-                Cancelar
-              </Link>
-            )}
-          </div>
+          <Acoes modo={modo} desabilitado={enviando || !!erroListas} />
           {fieldErrors.geral && <p className="field-error">{fieldErrors.geral}</p>}
           {sucesso && (
             <p className="text-ok mt-[18px] text-center text-sm font-bold">
@@ -249,5 +224,6 @@ export function FilmeForm() {
         </form>
       </div>
     </div>
+    </Estado>
   );
 }
