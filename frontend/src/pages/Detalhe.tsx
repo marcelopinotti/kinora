@@ -14,8 +14,17 @@ export function Detalhe() {
     let cancelled = false;
     setFilme(null);
     setErro('');
+
+    const idNum = Number(id);
+    if (!Number.isInteger(idNum) || idNum <= 0) {
+      // /titulo/abc virava GET /api/filme/NaN, que volta 400 e caía na mensagem
+      // genérica em vez da específica de título inexistente.
+      setErro('Título não encontrado.');
+      return;
+    }
+
     api
-      .filme(Number(id))
+      .filme(idNum)
       .then((f) => {
         if (!cancelled) setFilme(f);
       })

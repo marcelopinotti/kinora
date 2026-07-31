@@ -16,6 +16,11 @@ export function Cadastro() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (enviando) return;
+    // Limpa antes de tentar de novo: hoje só funciona porque todo braço do catch
+    // troca o objeto inteiro; um braço que fizesse merge parcial deixaria erro
+    // antigo na tela.
+    setErros({});
     setEnviando(true);
     try {
       await api.registrar({ nome: nome.trim(), email: email.trim(), senha });
@@ -29,6 +34,10 @@ export function Cadastro() {
     // Registro não devolve token: entra logo em seguida com as mesmas credenciais.
     // Se esse login falhar, a conta já existe — repetir o cadastro só devolveria
     // 409, então manda para o login com o aviso em vez de deixar o usuário preso.
+    //
+    // Sem finally de propósito: os dois caminhos navegam para fora, desmontando o
+    // formulário. Reabilitar o botão aqui só criaria uma janela de duplo envio
+    // durante a transição.
     try {
       await login(email.trim(), senha);
       navigate('/');
@@ -37,8 +46,6 @@ export function Cadastro() {
         replace: true,
         state: { aviso: 'Sua conta foi criada. Entre com seu e-mail e senha.' },
       });
-    } finally {
-      setEnviando(false);
     }
   }
 

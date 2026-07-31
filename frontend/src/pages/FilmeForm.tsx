@@ -74,8 +74,22 @@ export function FilmeForm() {
     if (modo !== 'editar' || !id) return;
     let cancelled = false;
     setCarregandoFilme(true);
+    // Sem este reset, ir direto de uma URL de edição para outra (mesmo <Route>,
+    // sem remontar) mantém a tela de erro anterior mesmo com o carregamento novo
+    // bem-sucedido.
+    setErroCarregar('');
+
+    const idNum = Number(id);
+    if (!Number.isInteger(idNum) || idNum <= 0) {
+      // /filme/abc/editar chegava aqui como NaN e virava GET /api/filme/NaN,
+      // devolvendo o erro genérico em vez de "não encontrado".
+      setErroCarregar('Título não encontrado.');
+      setCarregandoFilme(false);
+      return;
+    }
+
     api
-      .filme(Number(id))
+      .filme(idNum)
       .then((f) => {
         if (cancelled) return;
         setTitulo(f.titulo);
@@ -124,14 +138,19 @@ export function FilmeForm() {
     return erros;
   }
 
+  // setSucesso(false) aqui pelo mesmo motivo dos Field: sem isso, desmarcar uma
+  // categoria depois de salvar deixava "Alterações salvas." na tela ao lado de um
+  // formulário já modificado.
   function toggleCategoria(catId: number) {
     setCategoriasSel((sel) => (sel.includes(catId) ? sel.filter((x) => x !== catId) : sel.concat(catId)));
     setFieldErrors((e) => ({ ...e, categorias: '' }));
+    setSucesso(false);
   }
 
   function toggleStreaming(strId: number) {
     setStreamingsSel((sel) => (sel.includes(strId) ? sel.filter((x) => x !== strId) : sel.concat(strId)));
     setFieldErrors((e) => ({ ...e, streamings: '' }));
+    setSucesso(false);
   }
 
   async function onSubmit(e: FormEvent) {

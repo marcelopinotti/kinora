@@ -42,7 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (meObsoleto.current) return;
         // Só descarta o token quando o backend de fato o rejeitou. Erro de rede,
         // proxy fora do ar ou 500 não invalidam sessão nenhuma.
-        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) setToken(null);
+        //
+        // 404 saiu desta lista: em /api/auth/me ele quase sempre significa proxy
+        // mal configurado, não token inválido, e destruir a credencial por causa
+        // disso obriga o usuário a logar de novo por um problema de infra. Conta
+        // apagada de fato cai no mesmo caminho, mas aí o token já não vale no
+        // servidor — mantê-lo no cliente não concede acesso nenhum.
+        if (err instanceof ApiError && err.status === 401) setToken(null);
       })
       .finally(() => {
         if (!meObsoleto.current) setStatus('ready');

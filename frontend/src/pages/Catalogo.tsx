@@ -26,10 +26,18 @@ export function Catalogo({ tipo }: { tipo?: Tipo }) {
   const copia = COPIA[tipo ?? 'todos'];
 
   useEffect(() => {
+    let cancelled = false;
     api
       .categorias()
-      .then(setCategorias)
-      .catch(() => setErroCategorias('Não foi possível carregar os filtros.'));
+      .then((cats) => {
+        if (!cancelled) setCategorias(cats);
+      })
+      .catch(() => {
+        if (!cancelled) setErroCategorias('Não foi possível carregar os filtros.');
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

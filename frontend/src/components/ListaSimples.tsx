@@ -129,11 +129,14 @@ export function ListaSimples({
     try {
       await excluirItem(it.id);
       setItems((atual) => (atual ?? []).filter((x) => x.id !== it.id));
-      setRowErr((r) => ({ ...r, [it.id]: '' }));
+      // Descarta as entradas em vez de zerá-las: mantê-las faz os mapas crescerem
+      // pela sessão inteira, e um item futuro que reutilize o id herdaria o estado.
+      setRowErr(({ [it.id]: _descartado, ...resto }) => resto);
+      setRowBusy(({ [it.id]: _descartado, ...resto }) => resto);
+      return;
     } catch (err) {
       const msg = err instanceof ApiError && err.status === 409 ? mensagemEmUso(it.nome, entidade) : mensagemGenerica(err);
       setRowErr((r) => ({ ...r, [it.id]: msg }));
-    } finally {
       setRowBusy((b) => ({ ...b, [it.id]: false }));
     }
   }
@@ -226,7 +229,7 @@ export function ListaSimples({
                   </span>
                   <span className="text-muted-2 font-mono text-[11px]">#{it.id}</span>
                   <div className="flex gap-2">
-                    <button type="button" className="btn-row" onClick={() => iniciarEdicao(it)}>
+                    <button type="button" className="btn-row" onClick={() => iniciarEdicao(it)} disabled={busy}>
                       Editar
                     </button>
                     <button type="button" className="btn-row btn-row-danger" onClick={() => excluir(it)} disabled={busy}>
@@ -245,9 +248,13 @@ export function ListaSimples({
         })}
       </div>
 
-      <p className="text-muted-2 text-xs font-bold tracking-[0.1em] uppercase">
-        {n} {n === 1 ? 'item cadastrado' : 'itens cadastrados'}
-      </p>
+      {/* Só depois de carregar: antes, "0 itens cadastrados" aparecia ao lado de
+          "Carregando..." e da mensagem de falha, afirmando algo que não se sabe. */}
+      {items !== null && (
+        <p className="text-muted-2 text-xs font-bold tracking-[0.1em] uppercase">
+          {n} {n === 1 ? 'item cadastrado' : 'itens cadastrados'}
+        </p>
+      )}
     </section>
   );
 }

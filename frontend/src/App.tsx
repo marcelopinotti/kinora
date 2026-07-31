@@ -13,7 +13,12 @@ export function App() {
 
   // Enquanto valida o token (GET /api/auth/me), não renderiza nada: a TopBar
   // não pode piscar como "visitante" antes de saber se há sessão válida.
-  if (status === 'loading') return null;
+  // Chaves e indentação alinhada não são estilo: sem elas o `return` abaixo
+  // aparenta pertencer ao if, e basta alguém inserir um statement no meio para
+  // que a aparência vire comportamento.
+  if (status === 'loading') {
+    return null;
+  }
 
   return (
     <Routes>
