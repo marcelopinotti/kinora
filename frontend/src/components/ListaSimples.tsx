@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { ApiError, mensagemGenerica } from '../api';
 import { useFetch } from '../hooks/useFetch';
+import { ItemRow } from './ItemRow';
 
 export type Item = { id: number; nome: string };
 
@@ -15,17 +16,18 @@ type ListaSimplesProps = {
   excluirItem: (id: number) => Promise<void>;
 };
 
-function mensagemEmUso(nome: string, entidade: 'categoria' | 'streaming'): string {
-  const alvo = entidade === 'streaming' ? 'este streaming' : 'esta categoria';
-  return `Não foi possível excluir: ${nome} está em uso por filmes do catálogo. Remova ${alvo} dos filmes antes.`;
-}
-
 function mensagemErroNome(err: unknown): string {
   if (err instanceof ApiError && err.campos?.nome) return err.campos.nome;
   return mensagemGenerica(err);
 }
 
-/** Lista genérica reutilizada por Categorias e Streamings em /gerenciar. */
+/**
+ * Lista genérica reutilizada por Categorias e Streamings em /gerenciar.
+ *
+ * Cuida da lista e do formulário de criação; o estado de cada linha (rascunho,
+ * erro, ocupada) vive no ItemRow. `editingId` fica aqui de propósito, para
+ * continuar valendo a regra de uma linha em edição por vez.
+ */
 export function ListaSimples({
   titulo,
   subtitulo,
@@ -35,14 +37,11 @@ export function ListaSimples({
   criarItem,
   atualizarItem,
   excluirItem,
-}: ListaSimplesProps) {
+}: Readonly<ListaSimplesProps>) {
   const [novo, setNovo] = useState('');
   const [erroNovo, setErroNovo] = useState('');
   const [criando, setCriando] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [draft, setDraft] = useState('');
-  const [rowErr, setRowErr] = useState<Record<number, string>>({});
-  const [rowBusy, setRowBusy] = useState<Record<number, boolean>>({});
 
   // setItems continua exposto porque criar/renomear/excluir atualizam a lista no
   // cliente, sem refazer a busca.
@@ -63,7 +62,7 @@ export function ListaSimples({
 
   async function handleCriar(e: FormEvent) {
     e.preventDefault();
-    if (items === null) return;
+    if (items === null || criando) return;
     const erro = validarNome(novo);
     if (erro) {
       setErroNovo(erro);
@@ -79,54 +78,6 @@ export function ListaSimples({
       setErroNovo(mensagemErroNome(err));
     } finally {
       setCriando(false);
-    }
-  }
-
-  function iniciarEdicao(it: Item) {
-    setEditingId(it.id);
-    setDraft(it.nome);
-    setRowErr((r) => ({ ...r, [it.id]: '' }));
-  }
-
-  function cancelarEdicao() {
-    // Limpa também o erro da linha: cancelar não pode deixar a linha vermelha.
-    if (editingId !== null) setRowErr((r) => ({ ...r, [editingId]: '' }));
-    setEditingId(null);
-  }
-
-  async function salvarEdicao(it: Item) {
-    const erro = validarNome(draft, it.id);
-    if (erro) {
-      setRowErr((r) => ({ ...r, [it.id]: erro }));
-      return;
-    }
-    setRowBusy((b) => ({ ...b, [it.id]: true }));
-    try {
-      const atualizado = await atualizarItem(it.id, draft.trim());
-      setItems((atual) => (atual ?? []).map((x) => (x.id === it.id ? atualizado : x)));
-      setEditingId(null);
-      setRowErr((r) => ({ ...r, [it.id]: '' }));
-    } catch (err) {
-      setRowErr((r) => ({ ...r, [it.id]: mensagemErroNome(err) }));
-    } finally {
-      setRowBusy((b) => ({ ...b, [it.id]: false }));
-    }
-  }
-
-  async function excluir(it: Item) {
-    setRowBusy((b) => ({ ...b, [it.id]: true }));
-    try {
-      await excluirItem(it.id);
-      setItems((atual) => (atual ?? []).filter((x) => x.id !== it.id));
-      // Descarta as entradas em vez de zerá-las: mantê-las faz os mapas crescerem
-      // pela sessão inteira, e um item futuro que reutilize o id herdaria o estado.
-      setRowErr(({ [it.id]: _descartado, ...resto }) => resto);
-      setRowBusy(({ [it.id]: _descartado, ...resto }) => resto);
-      return;
-    } catch (err) {
-      const msg = err instanceof ApiError && err.status === 409 ? mensagemEmUso(it.nome, entidade) : mensagemGenerica(err);
-      setRowErr((r) => ({ ...r, [it.id]: msg }));
-      setRowBusy((b) => ({ ...b, [it.id]: false }));
     }
   }
 
@@ -177,64 +128,23 @@ export function ListaSimples({
         {items === null && !loadError && <p className="state-msg">Carregando...</p>}
         {loadError && <p className="state-msg state-error">{loadError}</p>}
         {items && items.length === 0 && <p className="state-msg">Nenhum item cadastrado.</p>}
-        {items?.map((it) => {
-          const editing = editingId === it.id;
-          const erro = rowErr[it.id];
-          const busy = !!rowBusy[it.id];
-          const editId = `lista-edit-${entidade}-${it.id}`;
-          return (
-            <div
-              key={it.id}
-              className={`bg-surface-2 flex flex-col gap-[9px] rounded-[10px] border py-[13px] pr-3.5 pl-4 ${
-                erro ? 'border-[rgba(255,106,74,0.4)]' : 'border-[rgba(255,255,255,0.05)]'
-              }`}
-            >
-              {editing ? (
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <label className="sr-only" htmlFor={editId}>
-                    Nome
-                  </label>
-                  <input
-                    id={editId}
-                    className="input border-accent h-10 min-w-[160px] flex-1 rounded-[7px] px-3.5 text-[15px]"
-                    value={draft}
-                    maxLength={100}
-                    onChange={(e) => setDraft(e.target.value)}
-                    disabled={busy}
-                    aria-invalid={!!erro}
-                    aria-describedby={erro ? `${editId}-erro` : undefined}
-                  />
-                  <button type="button" className="btn-row btn-row-solid" onClick={() => salvarEdicao(it)} disabled={busy}>
-                    Salvar
-                  </button>
-                  <button type="button" className="btn-row btn-row-plain" onClick={cancelarEdicao} disabled={busy}>
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-center gap-3.5">
-                  <span className="min-w-[120px] flex-1 text-[15px] font-semibold text-[#eaeaef] [overflow-wrap:anywhere]">
-                    {it.nome}
-                  </span>
-                  <span className="text-muted-2 font-mono text-[11px]">#{it.id}</span>
-                  <div className="flex gap-2">
-                    <button type="button" className="btn-row" onClick={() => iniciarEdicao(it)} disabled={busy}>
-                      Editar
-                    </button>
-                    <button type="button" className="btn-row btn-row-danger" onClick={() => excluir(it)} disabled={busy}>
-                      Excluir
-                    </button>
-                  </div>
-                </div>
-              )}
-              {erro && (
-                <p className="field-error" id={`${editId}-erro`}>
-                  {erro}
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {items?.map((it) => (
+          <ItemRow
+            key={it.id}
+            item={it}
+            entidade={entidade}
+            editando={editingId === it.id}
+            aoIniciarEdicao={setEditingId}
+            aoCancelarEdicao={() => setEditingId(null)}
+            validarNome={validarNome}
+            atualizarItem={atualizarItem}
+            excluirItem={excluirItem}
+            aoAtualizado={(atualizado) =>
+              setItems((atual) => (atual ?? []).map((x) => (x.id === atualizado.id ? atualizado : x)))
+            }
+            aoExcluido={(id) => setItems((atual) => (atual ?? []).filter((x) => x.id !== id))}
+          />
+        ))}
       </div>
 
       {/* Só depois de carregar: antes, "0 itens cadastrados" aparecia ao lado de
