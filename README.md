@@ -136,9 +136,11 @@ kinora/
 │   ├── application.yaml
 │   └── db/migration/    # scripts Flyway versionados (V1…V12)
 ├── frontend/
-│   └── src/
-│       ├── pages/        # telas (catálogo, detalhe, conta, formulário)
-│       └── components/   # componentes compartilhados
+│   ├── src/
+│   │   ├── pages/       # telas (catálogo, detalhe, conta, formulário)
+│   │   ├── components/  # componentes compartilhados
+│   │   └── hooks/       # useFetch, useFocoNoErro
+│   └── Dockerfile       # build com Node, Nginx servindo o estático
 ├── docker-compose.yml
 └── Dockerfile
 ```
@@ -189,7 +191,8 @@ npm install
 npm run dev
 ```
 
-A aplicação sobe em `http://localhost:5173`, consumindo a API local.
+A aplicação sobe em `http://localhost:5173`, consumindo a API local. `npm run lint` roda o
+ESLint e `npm run build` faz a checagem de tipos antes de gerar o bundle de produção.
 
 Primeiro request, do zero ao token:
 
