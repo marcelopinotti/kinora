@@ -1,6 +1,41 @@
 import { useEffect, useState } from 'react';
-import { api, mensagemGenerica } from '../../api';
+import { api, mensagemGenerica, type FilmeResponse } from '../../api';
 import { CAMPOS_VAZIOS, type CamposFilme } from './validarFilme';
+import * as React from "react";
+
+/**
+ * Resposta da API → campos do formulário: nulo vira string vazia e a nota troca
+ * o ponto pela vírgula, que é o separador que o input mostra e valida.
+ */
+function camposDe(f: FilmeResponse): CamposFilme {
+  return {
+    titulo: f.titulo,
+    descricao: f.descricao ?? '',
+    dataLancamento: f.dataLancamento ?? '',
+    nota: String(f.nota).replace('.', ','),
+    tipo: f.tipo,
+    posterUrl: f.posterUrl ?? '',
+    categorias: f.categorias.map((c) => c.id),
+    streamings: f.streamings.map((s) => s.id),
+  };
+}
+
+/**
+ * Devolve o erro em vez de lançar: quem chama é um efeito, que assim tem um
+ * único ponto de saída em vez de then/catch/finally com três guardas iguais.
+ */
+async function carregarCampos(id: string): Promise<{ campos?: CamposFilme; erro?: string }> {
+  const idNum = Number(id);
+  // /filme/abc/editar virava GET /api/filme/NaN, devolvendo o erro genérico
+  // em vez de "não encontrado".
+  if (!Number.isInteger(idNum) || idNum <= 0) return { erro: 'Título não encontrado.' };
+
+  try {
+    return { campos: camposDe(await api.filme(idNum)) };
+  } catch (err) {
+    return { erro: mensagemGenerica(err) };
+  }
+}
 
 type Resultado = {
   campos: CamposFilme;
@@ -33,36 +68,12 @@ export function useCamposFilme(id: string | undefined, modo: 'novo' | 'editar'):
     // bem-sucedido.
     setErro('');
 
-    const idNum = Number(id);
-    if (!Number.isInteger(idNum) || idNum <= 0) {
-      // /filme/abc/editar virava GET /api/filme/NaN, devolvendo o erro genérico
-      // em vez de "não encontrado".
-      setErro('Título não encontrado.');
+    void carregarCampos(id).then(({ campos, erro }) => {
+      if (cancelled) return;
+      if (campos) setCampos(campos);
+      setErro(erro ?? '');
       setCarregando(false);
-      return;
-    }
-
-    api
-      .filme(idNum)
-      .then((f) => {
-        if (cancelled) return;
-        setCampos({
-          titulo: f.titulo,
-          descricao: f.descricao ?? '',
-          dataLancamento: f.dataLancamento ?? '',
-          nota: String(f.nota).replace('.', ','),
-          tipo: f.tipo,
-          posterUrl: f.posterUrl ?? '',
-          categorias: f.categorias.map((c) => c.id),
-          streamings: f.streamings.map((s) => s.id),
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setErro(mensagemGenerica(err));
-      })
-      .finally(() => {
-        if (!cancelled) setCarregando(false);
-      });
+    });
 
     return () => {
       cancelled = true;

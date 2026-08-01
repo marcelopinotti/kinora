@@ -79,6 +79,31 @@ function isProblemDetail(value: unknown): value is ProblemDetail {
   return detailOk && camposOk;
 }
 
+// 204 e o 401 do filtro de segurança não têm corpo; texto de erro HTML também
+// não é JSON válido — nunca chamar res.json() direto. Corpo vazio cai no catch
+// (JSON.parse('') lança), então não precisa de checagem própria.
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+/** Nunca retorna: todo caminho de resposta não-2xx termina em ApiError. */
+function lancarErro(status: number, data: unknown, autoLogout: boolean): never {
+  // O type guard já garante os tipos de detail e campos — não re-checar aqui.
+  const { detail, campos }: ProblemDetail = isProblemDetail(data) ? data : {};
+
+  // Regra do contrato: deslogar automaticamente só quando 401 SEM detail.
+  // 401 com detail é erro de negócio (login errado, senha atual incorreta).
+  if (status === 401 && !detail && autoLogout) {
+    setToken(null);
+    sessionExpiredHandler?.();
+  }
+  throw new ApiError(status, detail, campos);
+}
+
 async function requestRaw(method: string, path: string, body?: unknown, autoLogout = true): Promise<unknown> {
   const headers: Record<string, string> = {};
   const token = getToken();
@@ -91,32 +116,8 @@ async function requestRaw(method: string, path: string, body?: unknown, autoLogo
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // 204 e o 401 do filtro de segurança não têm corpo; texto de erro HTML também
-  // não é JSON válido — nunca chamar res.json() direto.
-  const text = await res.text();
-  let data: unknown = null;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
-    }
-  }
-
-  if (!res.ok) {
-    const problem = isProblemDetail(data) ? data : {};
-    const detail = typeof problem.detail === 'string' ? problem.detail : undefined;
-    const campos = typeof problem.campos === 'object' && problem.campos !== null ? problem.campos : undefined;
-
-    // Regra do contrato: deslogar automaticamente só quando 401 SEM detail.
-    // 401 com detail é erro de negócio (login errado, senha atual incorreta).
-    if (res.status === 401 && !detail && autoLogout) {
-      setToken(null);
-      if (sessionExpiredHandler) sessionExpiredHandler();
-    }
-    throw new ApiError(res.status, detail, campos);
-  }
-
+  const data = parseJson(await res.text());
+  if (!res.ok) lancarErro(res.status, data, autoLogout);
   return data;
 }
 
