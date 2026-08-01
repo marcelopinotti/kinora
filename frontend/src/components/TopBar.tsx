@@ -7,7 +7,7 @@ import { Logo } from './Logo';
 type Active = 'catalog' | 'filmes' | 'series' | 'add' | 'edit' | 'gerenciar' | 'conta' | null;
 
 // As três rotas de catálogo são irmãs: cada uma acende só o próprio link.
-const ROTAS_CATALOGO = ['/', '/filmes', '/series'];
+const ROTAS_CATALOGO = new Set(['/', '/filmes', '/series']);
 
 
 function linkNav(ativo: boolean): string {
@@ -56,7 +56,7 @@ export function TopBar() {
     e.preventDefault();
     // Buscar dentro de /filmes ou /series não pode jogar o usuário de volta no
     // catálogo inteiro; de qualquer outra tela a busca cai em "/".
-    const destino = ROTAS_CATALOGO.includes(location.pathname) ? location.pathname : '/';
+    const destino = ROTAS_CATALOGO.has(location.pathname) ? location.pathname : '/';
     // Busca vazia leva à rota limpa em vez de empurrar "?q=" para o histórico.
     const termo = query.trim();
     navigate(termo ? `${destino}?q=${encodeURIComponent(termo)}` : destino);
@@ -64,7 +64,7 @@ export function TopBar() {
 
 
   return (
-    <div className="sticky top-0 z-[8] flex flex-wrap items-center gap-[clamp(14px,2vw,26px)] bg-linear-to-b from-[#0b0b0e] from-62% to-[rgba(11,11,14,0)] px-pad py-5">
+    <div className="sticky top-0 z-8 flex flex-wrap items-center gap-[clamp(14px,2vw,26px)] bg-linear-to-b from-[#0b0b0e] from-62% to-[rgba(11,11,14,0)] px-pad py-5">
       <Link to="/" className="flex items-center gap-2">
         <Logo />
       </Link>
@@ -74,7 +74,7 @@ export function TopBar() {
           escondê-las abaixo de 900px deixava o catálogo inalcançável no celular —
           para visitante e para usuário logado. Escondidos ficam só Cadastrar e
           Gerenciar, que o menu de fato oferece. */}
-      <nav className="flex min-w-0 flex-wrap items-center gap-[22px] text-[15px] max-[520px]:gap-4">
+      <nav className="flex min-w-0 flex-wrap items-center gap-5.5 text-[15px] max-[520px]:gap-4">
         <Link to="/" className={linkNav(active === 'catalog')}>
           Início
         </Link>
@@ -85,7 +85,7 @@ export function TopBar() {
           Séries
         </Link>
         {user && (
-          <span className="flex items-center gap-[22px] max-[900px]:hidden">
+          <span className="flex items-center gap-5.5 max-[900px]:hidden">
             <span className="bg-border-3 h-4 w-px flex-none" />
             <Link to="/filme/novo" className={linkNav(active === 'add' || active === 'edit')}>
               Cadastrar título
@@ -100,11 +100,11 @@ export function TopBar() {
       <div className="min-w-3 flex-1 max-[520px]:hidden" />
 
       <form
-        className="bg-surface-2 focus-within:border-accent flex h-11 max-w-[340px] min-w-[140px] flex-1 items-center gap-3 rounded-lg border border-[rgba(255,255,255,0.07)] px-4 max-[520px]:order-3 max-[520px]:max-w-none max-[520px]:basis-full"
+        className="bg-surface-2 focus-within:border-accent flex h-11 max-w-85 min-w-35 flex-1 items-center gap-3 rounded-lg border px-4 max-[520px]:order-3 max-[520px]:max-w-none max-[520px]:basis-full"
         role="search"
         onSubmit={submitSearch}
       >
-        <i className="border-muted size-[13px] flex-none rounded-full border-2" aria-hidden="true" />
+        <i className="border-muted size-3.25 flex-none rounded-full border-2" aria-hidden="true" />
         <label className="sr-only" htmlFor="topbar-busca">
           Buscar títulos, gêneros, pessoas
         </label>
