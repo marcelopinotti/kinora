@@ -71,8 +71,7 @@ public class FilmeService {
         filme.setCategorias(buscarCategorias(request.categorias()));
         filme.setStreamings(buscarStreamings(request.streamings()));
 
-        Filme filmeAtualizado = filmeRepository.save(filme);
-        return FilmeMapper.toResponse(filmeAtualizado);
+        return FilmeMapper.toResponse(filme);
     }
 
     private Filme buscarFilme(Long id) {

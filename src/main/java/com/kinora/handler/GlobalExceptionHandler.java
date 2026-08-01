@@ -1,5 +1,6 @@
 package com.kinora.handler;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -39,10 +40,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /** Único motivo de sobrescrever: dizer qual campo falhou, em vez de só contar quantos. */
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
-                                                                  HttpHeaders headers,
-                                                                  HttpStatusCode status,
-                                                                  WebRequest request) {
+    protected ResponseEntity< @NonNull Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
+                                                                            HttpHeaders headers,
+                                                                            HttpStatusCode status,
+                                                                            WebRequest request) {
         Map<String, String> campos = new LinkedHashMap<>();
         // putIfAbsent: um campo pode violar @NotBlank e @Size ao mesmo tempo; a primeira basta
         e.getBindingResult().getFieldErrors()
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /** Ponto único por onde passam os handlers herdados e os daqui. */
     @Override
-    protected ResponseEntity<Object> handleExceptionInternal(Exception e, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+    protected ResponseEntity< @NonNull Object> handleExceptionInternal(Exception e, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         ResponseEntity<Object> resposta = super.handleExceptionInternal(e, body, headers, statusCode, request);
         if (resposta != null && resposta.getBody() instanceof ProblemDetail problema) {
             HttpStatus status = HttpStatus.resolve(problema.getStatus());
