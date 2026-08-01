@@ -43,7 +43,7 @@ export function ExcluirConta({ aoExcluir }: Readonly<{ aoExcluir: () => void }>)
   return (
     <section className="rounded-[14px] border border-[rgba(255,106,74,0.28)] bg-linear-to-b from-[rgba(232,80,42,0.09)] to-[rgba(20,20,23,0.9)] px-[clamp(20px,4vw,32px)] pt-[clamp(22px,4vw,30px)] pb-[clamp(24px,4vw,32px)]">
       <h2 className="text-error-soft mb-2 text-[21px] font-extrabold tracking-[-0.02em]">Excluir conta</h2>
-      <p className="text-t2 max-w-[560px] text-[15px] leading-[1.55] [text-wrap:pretty]">
+      <p className="text-t2 max-w-140 text-[15px] leading-[1.55] text-pretty">
         Sua conta e seu histórico são apagados de forma permanente. Os filmes, categorias e streamings que você
         cadastrou continuam no catálogo.
       </p>
@@ -54,7 +54,7 @@ export function ExcluirConta({ aoExcluir }: Readonly<{ aoExcluir: () => void }>)
         </button>
       )}
       {confirmando && (
-        <div className="mt-6 rounded-xl border border-[rgba(255,106,74,0.34)] bg-[#1b1416] px-6 py-[22px]">
+        <div className="mt-6 rounded-xl border border-[rgba(255,106,74,0.34)] bg-[#1b1416] px-6 py-5.5">
           <h3 className="mb-1.5 text-base font-extrabold">Tem certeza que deseja excluir sua conta?</h3>
           <p className="text-t4 mb-5 text-sm">
             Esta ação não pode ser desfeita. Digite <strong className="text-white">EXCLUIR</strong> para confirmar.
@@ -65,7 +65,7 @@ export function ExcluirConta({ aoExcluir }: Readonly<{ aoExcluir: () => void }>)
             </label>
             <input
               id="conta-confirmar-exclusao"
-              className={`input h-[50px] min-w-[180px] flex-1 px-4 text-[15px] ${erro ? 'input-invalid' : ''}`.trim()}
+              className={`input h-12.5 min-w-45 flex-1 px-4 text-[15px] ${erro ? 'input-invalid' : ''}`.trim()}
               placeholder="EXCLUIR"
               value={texto}
               onChange={(e) => {

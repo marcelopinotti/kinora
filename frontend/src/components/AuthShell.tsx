@@ -4,7 +4,7 @@ import { Logo } from './Logo';
 // Fundo + card das telas de auth, idênticos em Login e Cadastro. Existia
 // duplicado nos dois arquivos; em utilitário seriam ~9 strings longas repetidas.
 // As camadas do fundo (.auth-*) ficam no CSS: são gradientes e faixas rotacionadas.
-export function AuthShell({ titulo, sub, children }: { titulo: string; sub?: string; children: ReactNode }) {
+export function AuthShell({ titulo, sub, children }: Readonly<{ titulo: string; sub?: string; children: ReactNode }>) {
   return (
     <div className="bg-bg relative min-h-screen overflow-hidden">
       <div className="auth-bg">
@@ -24,7 +24,7 @@ export function AuthShell({ titulo, sub, children }: { titulo: string; sub?: str
           <Logo size="lg" />
         </div>
         <div className="flex flex-1 items-center justify-center py-8">
-          <div className="shadow-card w-150 max-w-full rounded-[14px] border border-[rgba(255,255,255,0.07)] bg-[rgba(14,14,17,0.72)] px-[clamp(22px,7vw,72px)] pt-[clamp(32px,6vw,56px)] pb-[clamp(36px,6vw,60px)] backdrop-blur-[18px]">
+          <div className="shadow-card w-150 max-w-full rounded-[14px] border-border-2 border bg-[rgba(14,14,17,0.72)] px-[clamp(22px,7vw,72px)] pt-[clamp(32px,6vw,56px)] pb-[clamp(36px,6vw,60px)] backdrop-blur-[18px]">
             <h1 className="mb-2 text-center text-[clamp(28px,6vw,40px)] font-extrabold tracking-[-0.02em]">{titulo}</h1>
             {/* Login não tem subtítulo: lá o respiro do H1 até os campos é 36px
                 (8px do H1 + 28px daqui), sem precisar de classe por tela. */}

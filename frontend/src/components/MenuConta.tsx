@@ -5,7 +5,7 @@ import type { Usuario } from '../api';
 
 // Item do menu do avatar — 3 ocorrências com a mesma pinta.
 const ITEM_MENU =
-  'rounded-[7px] px-3 py-[9px] text-left text-sm font-semibold text-[#d8d8dd] hover:bg-[#22222a] hover:text-white';
+  'rounded-[7px] px-3 py-[9px] text-left text-sm font-semibold text-t1-soft hover:bg-[#22222a] hover:text-white';
 
 /**
  * Avatar e menu da conta. Estava embutido na TopBar junto com marca, navegação e
@@ -59,10 +59,10 @@ export function MenuConta({ user }: Readonly<{ user: Usuario }>) {
         {user.nome.trim().charAt(0).toUpperCase() || '?'}
       </button>
       {aberto && (
-        <div className="bg-menu shadow-menu absolute top-[50px] right-0 z-20 flex w-[216px] flex-col gap-0.5 rounded-xl border border-[rgba(255,255,255,0.1)] p-2">
-          <div className="mb-1.5 border-b border-[rgba(255,255,255,0.07)] px-3 pt-2.5 pb-3">
-            <p className="text-sm font-bold [overflow-wrap:anywhere]">{user.nome}</p>
-            <span className="text-muted mt-[3px] block text-xs [overflow-wrap:anywhere]">{user.email}</span>
+        <div className="bg-menu shadow-menu absolute top-12.5 right-0 z-20 flex w-54 flex-col gap-0.5 rounded-xl border border-[rgba(255,255,255,0.1)] p-2">
+          <div className="mb-1.5 border-border-2 border-b px-3 pt-2.5 pb-3">
+            <p className="text-sm font-bold wrap-anywhere">{user.nome}</p>
+            <span className="text-muted mt-0.75 block text-xs wrap-anywhere">{user.email}</span>
           </div>
           <Link to="/conta" className={ITEM_MENU} onClick={() => setAberto(false)}>
             Minha conta
@@ -75,7 +75,7 @@ export function MenuConta({ user }: Readonly<{ user: Usuario }>) {
           </Link>
           <button
             type="button"
-            className="text-error-soft mt-1 cursor-pointer rounded-[7px] border-0 border-t border-[rgba(255,255,255,0.07)] bg-transparent px-3 py-[9px] text-left text-sm font-bold hover:bg-[rgba(232,80,42,0.12)]"
+            className="text-error-soft mt-1 cursor-pointer rounded-[7px] border-0 border-border-2 border-t bg-transparent px-3 py-2.25 text-left text-sm font-bold hover:bg-accent-wash"
             onClick={sair}
           >
             Sair

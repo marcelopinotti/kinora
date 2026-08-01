@@ -4,7 +4,7 @@ import {Estado} from '../components/Estado';
 import {PillList} from '../components/PillList';
 import {Poster} from '../components/Poster';
 import {useAuth} from '../auth';
-import {ApiError, api, mensagemGenerica, type FilmeResponse} from '../api';
+import {api, ApiError, type FilmeResponse, mensagemGenerica} from '../api';
 import {useFetch} from '../hooks/useFetch';
 
 // 404 tem mensagem própria: "tente novamente" não ajuda quem digitou um id inexistente.
@@ -44,12 +44,13 @@ function InfoTitulo({filme, logado}: Readonly<{ filme: FilmeResponse; logado: bo
         // Só no texto: sombra em rótulo de botão ou pílula é sujeira.
         <div className="min-w-0">
             <p className="eyebrow on-poster">{filme.tipo === 'SERIE' ? 'Série' : 'Filme'}</p>
-            <h1 className="on-poster mt-1 text-[clamp(30px,6vw,50px)] leading-[1.05] font-extrabold tracking-[-0.02em] text-balance [overflow-wrap:anywhere]">
+            <h1 className="on-poster mt-1 text-[clamp(30px,6vw,50px)] leading-[1.05] font-extrabold tracking-[-0.02em] text-balance wrap-anywhere">
                 {filme.titulo}
             </h1>
 
             <div className="text-t2 on-poster mt-4 flex flex-wrap items-center gap-3 text-sm">
-        <span className="bg-accent-soft border-accent-line rounded-full border px-3 py-[5px] text-[15px] font-extrabold text-white">
+        <span
+            className="bg-accent-soft border-accent-line rounded-full border px-3 py-1.25 text-[15px] font-extrabold text-white">
           {filme.nota.toFixed(1).replace('.', ',')}
         </span>
                 {/* .dot-sep põe o • só ENTRE os metadados de texto — a nota é um bloco à parte */}
@@ -60,7 +61,7 @@ function InfoTitulo({filme, logado}: Readonly<{ filme: FilmeResponse; logado: bo
             </div>
 
             {filme.descricao && (
-                <p className="on-poster text-t2 mt-5 max-w-[62ch] text-base leading-[1.65] [text-wrap:pretty]">
+                <p className="on-poster text-t2 mt-5 max-w-[62ch] text-base leading-[1.65] text-pretty">
                     {filme.descricao}
                 </p>
             )}

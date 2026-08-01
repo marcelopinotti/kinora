@@ -59,7 +59,7 @@ export function FormNovoItem({
   }
 
   return (
-    <form className="flex min-w-0 flex-col gap-[7px]" onSubmit={onSubmit}>
+    <form className="flex min-w-0 flex-col gap-1.75" onSubmit={onSubmit}>
       <div className="flex gap-2.5">
         <label className="sr-only" htmlFor={novoId}>
           {placeholder}

@@ -54,7 +54,7 @@ export function Field(props: InputProps | TextareaProps) {
   };
 
   return (
-    <div className="flex min-w-0 flex-col gap-[7px]">
+    <div className="flex min-w-0 flex-col gap-1.75">
       <label className={hideLabel ? 'sr-only' : 'field-label'} htmlFor={id}>
         {label} {required && !hideLabel && <span className="text-accent" aria-hidden="true">*</span>}
       </label>

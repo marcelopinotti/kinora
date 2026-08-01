@@ -23,11 +23,11 @@ export function Conta() {
   }
 
   return (
-    <div className="px-pad mx-auto flex w-full max-w-[calc(760px+var(--spacing-pad)*2)] flex-col gap-[22px] pt-[18px]">
+    <div className="px-pad mx-auto flex w-full max-w-[calc(760px+var(--spacing-pad)*2)] flex-col gap-5.5 pt-4.5">
       <div>
         <p className="eyebrow">Minha conta</p>
         <h1 className="text-[clamp(26px,5vw,34px)] font-extrabold tracking-[-0.02em]">{user.nome}</h1>
-        <p className="text-t3 mt-2 max-w-[620px] text-[15px] [text-wrap:pretty]">
+        <p className="text-t3 mt-2 max-w-155 text-[15px] text-pretty">
           Gerencie seus dados de acesso à Kinora.
         </p>
       </div>

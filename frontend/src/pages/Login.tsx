@@ -79,7 +79,7 @@ export function Login() {
       </form>
       <p className="text-t3 mt-6.5 text-center text-[15px]">
         Novo por aqui?{' '}
-        <Link to="/cadastro" className="text-accent font-bold hover:text-[#ff7350]">
+        <Link to="/cadastro" className="text-accent font-bold hover:text-accent-text-hover">
           Assine agora
         </Link>
       </p>
