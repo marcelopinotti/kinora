@@ -7,6 +7,12 @@ type EstadoProps = {
   vazio?: boolean;
   mensagemCarregando?: string;
   mensagemVazio?: string;
+  /**
+   * Calha lateral da mensagem. `px-pad` (padrão) alinha com o resto da página;
+   * dentro de um card, que já tem padding próprio, precisa ser '' — senão o texto
+   * fica deslocado até 48px do conteúdo vizinho.
+   */
+  classNameMensagem?: string;
   children: ReactNode;
 };
 
@@ -23,10 +29,21 @@ export function Estado({
   vazio,
   mensagemCarregando = 'Carregando...',
   mensagemVazio,
+  classNameMensagem = 'px-pad',
   children,
 }: Readonly<EstadoProps>) {
-  if (erro) return <p className="state-msg state-error">{erro}</p>;
-  if (carregando) return <p className="state-msg">{mensagemCarregando}</p>;
-  if (vazio && mensagemVazio) return <p className="state-msg">{mensagemVazio}</p>;
+  const classe = `state-msg ${classNameMensagem}`.trim();
+
+  // role="alert" só no erro: falha de carga precisa ser anunciada, "Carregando..."
+  // e "nenhum resultado" não — seriam interrupções a cada troca de filtro.
+  if (erro) {
+    return (
+      <p className={`${classe} state-error`} role="alert">
+        {erro}
+      </p>
+    );
+  }
+  if (carregando) return <p className={classe}>{mensagemCarregando}</p>;
+  if (vazio && mensagemVazio) return <p className={classe}>{mensagemVazio}</p>;
   return <>{children}</>;
 }
