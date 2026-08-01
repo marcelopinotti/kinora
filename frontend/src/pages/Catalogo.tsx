@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {Link, useNavigate, useSearchParams} from 'react-router-dom';
+import {Link, useSearchParams} from 'react-router-dom';
 import {Estado} from '../components/Estado';
 import {Poster} from '../components/Poster';
 import {RadioChips} from '../components/RadioChips';
@@ -15,7 +15,7 @@ const COPIA = {
     SERIE: {eyebrow: 'Séries', h2: 'Todas as séries', vazio: 'Nenhuma série encontrada.'},
 };
 
-export function Catalogo({tipo}: { tipo?: Tipo }) {
+export function Catalogo({tipo}: Readonly<{ tipo?: Tipo }>) {
     const {user} = useAuth();
     const [searchParams] = useSearchParams();
     const q = (searchParams.get('q') ?? '').trim().toLowerCase();
@@ -78,10 +78,9 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
             >
                 {/* auto-fill mantém as 4 colunas do handoff no desktop e degrada sozinho */}
                 <div
-                    className="px-pad grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-[22px] pt-[26px] xl:grid-cols-4">
+                    className="px-pad grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5.5 pt-6.5 xl:grid-cols-4">
                     {filtrados.map((f) => (
-                        // O badge de tipo só faz sentido na lista misturada.
-                        <FilmeCard key={f.id} filme={f} logado={!!user} mostrarBadge={tipo === undefined}/>
+                        <FilmeCard key={f.id} filme={f} logado={!!user}/>
                     ))}
                 </div>
             </Estado>
@@ -92,46 +91,26 @@ export function Catalogo({tipo}: { tipo?: Tipo }) {
 function FilmeCard({
                        filme,
                        logado,
-                       mostrarBadge,
-                   }: {
+                   }: Readonly<{
     filme: FilmeResponse;
     logado: boolean;
-    mostrarBadge: boolean;
-}) {
-    const navigate = useNavigate();
-    const top10 = filme.nota >= 9;
+}>) {
     const ano = filme.dataLancamento ? filme.dataLancamento.slice(-4) : null;
 
-    // O card inteiro virou <a>: "Editar" não pode ser outro <a> aninhado (HTML
-    // inválido), então é um span com papel de link e teclado no braço.
-    function irParaEdicao(e: { preventDefault(): void; stopPropagation(): void }) {
-        e.preventDefault();
-        e.stopPropagation();
-        navigate(`/filme/${filme.id}/editar`);
-    }
-
     return (
-        // 'group' substitui as regras .card:hover / .card-link:focus-visible > .card:
-        // o alvo do foco é o <a>, mas quem se pinta é o <article> dentro dele.
-        <Link
-            className="group focus-visible:outline-accent flex h-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-[3px]"
-            to={`/titulo/${filme.id}`}
-        >
-            <article
-                className="border-border bg-surface group-hover:border-accent-line group-focus-visible:border-accent-line relative flex min-w-0 flex-1 flex-col gap-3.5 rounded-xl border p-[26px] pb-[22px] transition-[transform,border-color] duration-[180ms] group-hover:-translate-y-1">
-                {top10 && (
-                    <div
-                        className="bg-accent absolute top-0 right-5 w-[30px] rounded-b-[3px] pt-[5px] pb-[7px] text-center text-[9px] leading-[1.15] font-extrabold">
-                        TOP
-                        <br/>
-                        10
-                    </div>
-                )}
-                {/* pílula "Série": 8px dentro da arte (padding do card = 26px), à esquerda,
-            longe do selo TOP 10 que mora no topo direito. */}
-                {mostrarBadge && filme.tipo === 'SERIE' && (
+        // Nada de <a> envolvendo o card: "Editar" é um link de verdade e link
+        // dentro de link é HTML inválido. O card é um <article> e quem cobre a
+        // área clicável é o ::after do link do título (padrão "stretched link"),
+        // que também desenha o anel de foco no tamanho do card.
+        <article
+            className="bg-surface hover:border-accent-line has-[a:focus-visible]:border-accent-line relative flex h-full min-w-0 flex-col gap-3.5 rounded-xl border p-6.5 pb-5.5 transition-[transform,border-color] duration-180 hover:-translate-y-1">
+                {/* pílula "Série": 8px dentro da arte (padding do card = 26px), à esquerda.
+            Aparece em toda lista, inclusive em /series. Condicionar à lista
+            misturada fazia a mesma série ter plaquinha na home e não ter na aba
+            Séries — o que se lia como falha, não como economia de tinta. */}
+                {filme.tipo === 'SERIE' && (
                     <span
-                        className="bg-scrim border-border-3 absolute top-[34px] left-[34px] z-1 rounded-full border px-2.5 py-1 text-[10px] font-extrabold tracking-[0.12em] text-white uppercase backdrop-blur-[6px]">
+                        className="bg-scrim border-border-3 absolute top-8.5 left-8.5 z-1 rounded-full border px-2.5 py-1 text-[10px] font-extrabold tracking-[0.12em] text-white uppercase backdrop-blur-[6px]">
             Série
           </span>
                 )}
@@ -142,18 +121,25 @@ function FilmeCard({
                     className="border-border rounded-[10px]"
                     lazy
                 />
-                <h3 className="text-[22px] font-extrabold tracking-[-0.02em] [overflow-wrap:anywhere]">{filme.titulo}</h3>
+                <h3 className="text-[22px] font-extrabold tracking-[-0.02em] wrap-anywhere">
+                    <Link
+                        to={`/titulo/${filme.id}`}
+                        className="after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:outline-accent focus-visible:after:outline-2 focus-visible:after:outline-offset-[3px]"
+                    >
+                        {filme.titulo}
+                    </Link>
+                </h3>
                 {filme.descricao && (
-                    <p className="text-sm leading-normal text-[#a2a2a9] [text-wrap:pretty]">{filme.descricao}</p>
+                    <p className="text-sm leading-normal text-[#a2a2a9] text-pretty">{filme.descricao}</p>
                 )}
                 <div className="text-t2 mt-auto flex flex-wrap gap-3.5 text-xs">
           <span className="flex items-center gap-1.5">
-            <span className="bg-accent size-[11px] flex-none rounded-[3px]" aria-hidden="true"/>
+            <span className="bg-accent size-2.75 flex-none rounded-[3px]" aria-hidden="true"/>
               {filme.nota.toFixed(1).replace('.', ',')} / 10
           </span>
                     {ano && (
                         <span className="flex items-center gap-1.5">
-              <span className="border-accent size-[11px] flex-none rounded-full border-2" aria-hidden="true"/>
+              <span className="border-accent size-2.75 flex-none rounded-full border-2" aria-hidden="true"/>
                             {ano}
             </span>
                     )}
@@ -167,21 +153,17 @@ function FilmeCard({
               </span>
                         ))}
                     </div>
+                    {/* relative z-1: fica acima do ::after que cobre o card, senão
+                        o clique em "Editar" cairia no link do título. */}
                     {logado && (
-                        <span
-                            className="text-accent text-xs font-bold whitespace-nowrap"
-                            role="link"
-                            tabIndex={0}
-                            onClick={irParaEdicao}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') irParaEdicao(e);
-                            }}
+                        <Link
+                            to={`/filme/${filme.id}/editar`}
+                            className="text-accent relative z-1 text-xs font-bold whitespace-nowrap"
                         >
-              Editar
-            </span>
+                            Editar
+                        </Link>
                     )}
                 </div>
-            </article>
-        </Link>
+        </article>
     );
 }
