@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { Estado } from './Estado';
 import { FormNovoItem } from './FormNovoItem';
@@ -49,6 +49,7 @@ export function ListaSimples({
   excluirItem,
 }: Readonly<ListaSimplesProps>) {
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [alfabetica, setAlfabetica] = useState(false);
 
   // setItems continua exposto porque criar/renomear/excluir atualizam a lista no
   // cliente, sem refazer a busca.
@@ -58,20 +59,48 @@ export function ListaSimples({
 
   const n = items?.length ?? 0;
 
+  // sort() muta o array, e `items` é o estado do useFetch — daí a cópia.
+  // localeCompare com pt-BR para acento não jogar "Ação" e "Ficção" para o fim,
+  // que é o que a comparação bruta de code points faria.
+  const visiveis = useMemo(
+    () => (alfabetica && items ? [...items].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')) : items),
+    [items, alfabetica],
+  );
+
+  // Handlers nomeados em vez de arrows dentro do JSX: era o aninhamento do map
+  // com o updater de setItems que empilhava cinco níveis de função.
+  const validarNome = (nome: string, ignorarId?: number) => validarNomeEm(items ?? [], nome, ignorarId);
+  const aoCriado = (criado: Item) => setItems((atual) => (atual ?? []).concat(criado));
+  const aoAtualizado = (item: Item) => setItems((atual) => (atual ?? []).map((x) => (x.id === item.id ? item : x)));
+  const aoExcluido = (id: number) => setItems((atual) => (atual ?? []).filter((x) => x.id !== id));
+
   return (
-    <section className="bg-surface border-border flex flex-col gap-5 rounded-[14px] border px-[clamp(20px,4vw,30px)] pt-[clamp(22px,4vw,30px)] pb-[26px]">
-      <div>
-        <h2 className="text-2xl font-extrabold tracking-[-0.02em]">{titulo}</h2>
-        <p className="text-t3 mt-1.5 text-sm">{subtitulo}</p>
+    <section className="surface flex flex-col gap-5 px-[clamp(20px,4vw,30px)] pt-[clamp(22px,4vw,30px)] pb-6.5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-extrabold tracking-[-0.02em]">{titulo}</h2>
+          <p className="text-t3 mt-1.5 text-sm">{subtitulo}</p>
+        </div>
+        {/* aria-pressed e não dois rótulos: o botão é um alternador, e o estado
+            ligado/desligado é o que o leitor de tela precisa anunciar. */}
+        <button
+          type="button"
+          className={`btn-row ${alfabetica ? 'border-accent text-white' : ''}`.trim()}
+          aria-pressed={alfabetica}
+          onClick={() => setAlfabetica((v) => !v)}
+          disabled={items === null}
+        >
+          Ordenar A–Z
+        </button>
       </div>
 
       <FormNovoItem
         placeholder={placeholder}
         entidade={entidade}
         bloqueado={items === null}
-        validarNome={(nome) => validarNomeEm(items ?? [], nome)}
+        validarNome={validarNome}
         criarItem={criarItem}
-        aoCriado={(criado) => setItems((atual) => (atual ?? []).concat(criado))}
+        aoCriado={aoCriado}
       />
 
       <div className="flex flex-col gap-2">
@@ -80,8 +109,9 @@ export function ListaSimples({
           erro={loadError}
           vazio={items?.length === 0}
           mensagemVazio="Nenhum item cadastrado."
+          classNameMensagem=""
         >
-          {items?.map((it) => (
+          {visiveis?.map((it) => (
             <ItemRow
               key={it.id}
               item={it}
@@ -89,13 +119,11 @@ export function ListaSimples({
               editando={editingId === it.id}
               aoIniciarEdicao={setEditingId}
               aoCancelarEdicao={() => setEditingId(null)}
-              validarNome={(nome, ignorarId) => validarNomeEm(items ?? [], nome, ignorarId)}
+              validarNome={validarNome}
               atualizarItem={atualizarItem}
               excluirItem={excluirItem}
-              aoAtualizado={(atualizado) =>
-                setItems((atual) => (atual ?? []).map((x) => (x.id === atualizado.id ? atualizado : x)))
-              }
-              aoExcluido={(id) => setItems((atual) => (atual ?? []).filter((x) => x.id !== id))}
+              aoAtualizado={aoAtualizado}
+              aoExcluido={aoExcluido}
             />
           ))}
         </Estado>
@@ -104,7 +132,7 @@ export function ListaSimples({
       {/* Só depois de carregar: antes, "0 itens cadastrados" aparecia ao lado de
           "Carregando..." e da mensagem de falha, afirmando algo que não se sabe. */}
       {items !== null && (
-        <p className="text-muted-2 text-xs font-bold tracking-[0.1em] uppercase">
+        <p className="text-muted-2 text-xs font-bold tracking-widest uppercase">
           {n} {n === 1 ? 'item cadastrado' : 'itens cadastrados'}
         </p>
       )}
