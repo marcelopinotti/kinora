@@ -1,9 +1,10 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthShell } from '../components/AuthShell';
 import { Field } from '../components/Field';
 import { useAuth } from '../auth';
-import { ApiError, api, mensagemGenerica } from '../api';
+import { useFocoNoErro } from '../hooks/useFocoNoErro';
+import { api, erroDeApi } from '../api';
 
 export function Cadastro() {
   const navigate = useNavigate();
@@ -14,21 +15,34 @@ export function Cadastro() {
   const [erros, setErros] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
 
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocoNoErro(erros, formRef);
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (enviando) return;
+    // Limpa antes de tentar de novo: hoje só funciona porque todo braço do catch
+    // troca o objeto inteiro; um braço que fizesse merge parcial deixaria erro
+    // antigo na tela.
+    setErros({});
     setEnviando(true);
     try {
       await api.registrar({ nome: nome.trim(), email: email.trim(), senha });
     } catch (err) {
-      if (err instanceof ApiError && err.campos) setErros(err.campos);
-      else if (err instanceof ApiError && err.detail) setErros({ email: err.detail });
-      else setErros({ email: mensagemGenerica(err) });
+      // 409 de e-mail duplicado vai sob o campo; falha sem campo identificável vai
+      // para `geral`, acima do formulário — antes caía sob "e-mail" e sugeria que o
+      // problema era o endereço digitado, mesmo quando era a rede.
+      setErros(erroDeApi(err, 'email'));
       setEnviando(false);
       return;
     }
     // Registro não devolve token: entra logo em seguida com as mesmas credenciais.
     // Se esse login falhar, a conta já existe — repetir o cadastro só devolveria
     // 409, então manda para o login com o aviso em vez de deixar o usuário preso.
+    //
+    // Sem finally de propósito: os dois caminhos navegam para fora, desmontando o
+    // formulário. Reabilitar o botão aqui só criaria uma janela de duplo envio
+    // durante a transição.
     try {
       await login(email.trim(), senha);
       navigate('/');
@@ -37,8 +51,6 @@ export function Cadastro() {
         replace: true,
         state: { aviso: 'Sua conta foi criada. Entre com seu e-mail e senha.' },
       });
-    } finally {
-      setEnviando(false);
     }
   }
 
@@ -48,7 +60,8 @@ export function Cadastro() {
 
   return (
     <AuthShell titulo="Cadastre-se" sub="Milhares de filmes e séries. Cancele quando quiser.">
-      <form onSubmit={onSubmit}>
+      {erros.geral && <p className="field-error" role="alert">{erros.geral}</p>}
+      <form ref={formRef} onSubmit={onSubmit}>
         <div className="flex flex-col gap-4">
           <Field
             id="cadastro-nome"
@@ -100,9 +113,9 @@ export function Cadastro() {
           Criar minha conta
         </button>
       </form>
-      <p className="text-t3 mt-[26px] text-center text-[15px]">
+      <p className="text-t3 mt-6.5 text-center text-[15px]">
         Já tem uma conta?{' '}
-        <Link to="/login" className="text-accent font-bold hover:text-[#ff7350]">
+        <Link to="/login" className="text-accent font-bold hover:text-accent-text-hover">
           Faça login
         </Link>
       </p>

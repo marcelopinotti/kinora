@@ -37,6 +37,13 @@
   --color-accent-line: rgba(232, 80, 42, 0.5);
   /* véu escuro sobre imagem: garante o contraste que o pôster não garante */
   --color-scrim: rgba(8, 8, 10, 0.72);
+  /* laranja de link em texto: mais claro que --color-accent-hover, que é de botão */
+  --color-accent-text-hover: #ff7350;
+  /* lavagem e borda do estado destrutivo — 2 usos cada, antes soltos em rgba() */
+  --color-accent-wash: rgba(232, 80, 42, 0.14);
+  --color-error-line: rgba(255, 106, 74, 0.35);
+  /* branco de texto de linha/menu: entre t1 e t2 */
+  --color-t1-soft: #d8d8dd;
 
   --font-sans: 'Manrope', Helvetica, Arial, sans-serif;
   --font-display: 'Archivo Black', Helvetica, Arial, sans-serif;
@@ -61,7 +68,7 @@
   }
 
   body {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans), sans-serif;
     color: var(--color-t1);
     -webkit-font-smoothing: antialiased;
   }
@@ -78,7 +85,7 @@
     width: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    background: #2a2a2e;
+    background: var(--color-surface-3);
     border-radius: 8px;
   }
 
@@ -103,43 +110,46 @@
 @layer components {
   .btn {
     @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border-0
-      text-[15px] font-bold whitespace-nowrap transition-colors disabled:cursor-progress
+      text-[15px] font-bold whitespace-nowrap transition-colors
       disabled:opacity-60;
   }
   .btn-primary {
-    @apply bg-accent hover:not-disabled:bg-accent-hover h-13 px-[30px] text-white;
+    @apply bg-accent hover:not-disabled:bg-accent-hover h-13 px-7.5 text-white;
   }
   .btn-ghost {
     @apply border-border-3 text-t4 h-13 border bg-transparent px-5 hover:not-disabled:text-white;
   }
   .btn-danger {
-    @apply bg-destructive hover:not-disabled:bg-destructive-hover h-[50px] px-6 text-white;
+    @apply bg-destructive hover:not-disabled:bg-destructive-hover h-12.5 px-6 text-white;
   }
   .btn-danger-outline {
-    @apply text-error-soft h-13 border border-[rgba(255,106,74,0.5)] bg-transparent px-[26px]
-      hover:not-disabled:bg-[rgba(232,80,42,0.14)];
+    @apply text-error-soft border-error-soft/50 hover:not-disabled:bg-accent-wash h-13 border
+      bg-transparent px-6.5;
   }
   .btn-outline {
-    @apply hover:not-disabled:border-accent border border-[rgba(255,255,255,0.16)] bg-transparent text-white;
+    @apply hover:not-disabled:border-accent border-border-3 border bg-transparent text-white;
   }
   /* CTA alto das telas de auth e do formulário de filme */
   .btn-tall {
     @apply h-15 text-[17px];
   }
   .btn-sm {
-    @apply h-10 rounded-[7px] px-[18px] text-sm;
+    @apply h-10 rounded-[7px] px-4.5 text-sm;
   }
 
   /* botões de linha do Gerenciar */
   .btn-row {
-    @apply border-border-3 hover:not-disabled:border-accent inline-flex h-[34px] cursor-pointer
+    @apply border-border-3 hover:not-disabled:border-accent inline-flex h-8.5 cursor-pointer
       items-center justify-center rounded-[7px] border bg-transparent px-3.5 text-[13px]
-      font-bold text-[#d8d8dd] transition-colors hover:not-disabled:text-white;
+      font-bold text-t1-soft transition-colors hover:not-disabled:text-white;
   }
-  .btn-row-danger {
-    @apply text-error-soft border-[rgba(255,106,74,0.35)]
-      hover:not-disabled:border-[rgba(255,106,74,0.35)] hover:not-disabled:bg-[rgba(232,80,42,0.14)]
-      hover:not-disabled:text-[color:var(--color-error-soft)];
+  /* .btn-row.btn-row-danger pelo mesmo motivo do .chip.chip-on: vence por
+     especificidade. O hover:text-error-soft que existia aqui era no-op — repetia a
+     cor que a própria regra já define, só para derrotar o hover:text-white do
+     .btn-row. Com (0,2,0) isso deixa de ser necessário. */
+  .btn-row.btn-row-danger {
+    @apply text-error-soft border-error-line
+      hover:not-disabled:border-error-line hover:not-disabled:bg-accent-wash;
   }
   .btn-row-solid {
     @apply bg-accent hover:not-disabled:bg-accent-hover h-10 border-0 px-4 text-white;
@@ -150,14 +160,14 @@
 
   .input,
   .textarea {
-    @apply border-border-2 bg-input focus:border-accent w-full rounded-lg border text-base
+    @apply bg-input focus:border-accent w-full rounded-lg border text-base
       text-white transition-colors outline-none;
   }
   .input {
-    @apply h-14 px-[18px];
+    @apply h-14 px-4.5;
   }
   .textarea {
-    @apply resize-y px-[18px] py-4 leading-relaxed;
+    @apply resize-y px-4.5 py-4 leading-relaxed;
   }
   .input-invalid {
     @apply border-error;
@@ -168,26 +178,27 @@
   }
   /* inputs do formulário de filme */
   .input-form {
-    @apply h-[58px];
+    @apply h-14.5;
   }
 
   .chip {
     @apply border-border-2 bg-surface-3 text-t4 inline-flex h-10 cursor-pointer items-center
-      justify-center rounded-full border px-[18px] text-sm font-bold transition-colors hover:text-white;
+      justify-center rounded-full border px-4.5 text-sm font-bold transition-colors hover:text-white;
   }
   /* pílulas do filtro do catálogo: 8px 16px / 13px no handoff */
   .chip-filter {
     @apply bg-surface-2 h-auto px-4 py-2 text-[13px];
   }
-  /* DEPOIS de .chip-filter de propósito: as três têm especificidade (0,1,0), então
-     quem ganha é a última declarada. Se .chip-on subir, o filtro ativo do catálogo
-     volta a renderizar cinza em vez de laranja. */
-  .chip-on {
+  /* .chip.chip-on e não .chip-on: com (0,2,0) ele vence .chip-filter (0,1,0) por
+     especificidade, não por ordem de declaração. Antes, mover este bloco para cima
+     no arquivo fazia o filtro ativo do catálogo voltar a renderizar cinza — uma
+     regra load-bearing protegida só por um comentário. */
+  .chip.chip-on {
     @apply bg-accent border-accent text-white;
   }
 
   .pill {
-    @apply bg-surface-3 text-t4 rounded-[5px] px-3 py-[5px] text-[11px] font-bold tracking-[0.12em] uppercase;
+    @apply bg-surface-3 text-t4 rounded-[5px] px-3 py-1.25 text-[11px] font-bold tracking-[0.12em] uppercase;
   }
 
   .field-label {
@@ -205,15 +216,20 @@
   .eyebrow {
     @apply text-accent text-[13px] font-bold tracking-[0.18em] uppercase;
   }
-  /* "Carregando...", "Nenhum título encontrado.", falhas de carga */
+  /* "Carregando...", "Nenhum título encontrado.", falhas de carga.
+     Sem px-pad: a calha lateral é da página, e esta classe também é usada dentro
+     de card (Gerenciar), onde empurrava o texto até 48px além do resto do card.
+     Quem está no nível da página aplica px-pad por fora — ver Estado.tsx. */
   .state-msg {
-    @apply text-t3 px-pad py-10 text-[15px];
+    @apply text-t3 py-10 text-[15px];
   }
   .state-error {
     @apply text-error font-semibold;
   }
 
-  /* superfícies: card de filme, painel, form, lista do Gerenciar */
+  /* Painel padrão: Gerenciar, Conta (dois) e o formulário de filme. Estava
+     definida e sem nenhum uso, enquanto quatro lugares reinlinavam exatamente
+     estas quatro utilidades. */
   .surface {
     @apply bg-surface border-border rounded-[14px] border;
   }
@@ -239,7 +255,7 @@
   clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 .logo-word {
-  font-family: var(--font-display);
+  font-family: var(--font-display), sans-serif;
   letter-spacing: -0.005em;
   line-height: 1;
   background: linear-gradient(180deg, #fff3ec 0%, #f0bfa8 55%, #d97847 100%);
@@ -324,6 +340,11 @@
    dissolvido em bg. Sobe atrás da topbar (z-index 8, gradiente próprio) para a
    cor começar na primeira linha. overflow:hidden contém o sangramento do blur. */
 .detalhe-bg {
+  /* Contrato com Detalhe.tsx, que sobrescreve isto no style inline com o
+     url() do pôster. Declarado aqui para a propriedade existir na folha de
+     estilo — sem a declaração o elemento ainda funciona (o inline chega
+     antes de pintar), mas a análise estática do CSS não tem o que resolver. */
+  --poster: none;
   position: absolute;
   inset: -100px 0 auto 0;
   height: clamp(420px, 62vh, 720px);
@@ -336,7 +357,7 @@
   content: '';
   position: absolute;
   inset: -14%;
-  background-image: var(--poster, none);
+  background-image: var(--poster);
   background-size: cover;
   background-position: 50% 26%;
   filter: blur(48px) saturate(0.85) brightness(0.55);

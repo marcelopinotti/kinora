@@ -1,8 +1,9 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthShell } from '../components/AuthShell';
 import { Field } from '../components/Field';
 import { useAuth } from '../auth';
+import { useFocoNoErro } from '../hooks/useFocoNoErro';
 import { ApiError, mensagemGenerica } from '../api';
 
 export function Login() {
@@ -13,6 +14,10 @@ export function Login() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
+  // O erro do login mora no campo de senha; o hook leva o foco de volta para ele.
+  useFocoNoErro(erro ? { senha: erro } : {}, formRef);
   // Vem do Cadastro quando a conta foi criada mas o login automático falhou.
   const aviso = (location.state as { aviso?: string } | null)?.aviso;
 
@@ -36,7 +41,7 @@ export function Login() {
   return (
     <AuthShell titulo="Entre na sua conta">
       {aviso && <p className="field-ok">{aviso}</p>}
-      <form onSubmit={onSubmit}>
+      <form ref={formRef} onSubmit={onSubmit}>
         <div className="flex flex-col gap-4">
           <Field
             id="login-email"
@@ -72,9 +77,9 @@ export function Login() {
           Entrar na conta
         </button>
       </form>
-      <p className="text-t3 mt-[26px] text-center text-[15px]">
+      <p className="text-t3 mt-6.5 text-center text-[15px]">
         Novo por aqui?{' '}
-        <Link to="/cadastro" className="text-accent font-bold hover:text-[#ff7350]">
+        <Link to="/cadastro" className="text-accent font-bold hover:text-accent-text-hover">
           Assine agora
         </Link>
       </p>
